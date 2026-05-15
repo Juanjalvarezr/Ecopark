@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ecopark Mundo de Colores - Microaventura Emocional</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <meta name="description" content="Vive una microaventura sensorial a solo 3 horas de Bogotá. Descubre cómo los colores transforman tu estado de ánimo.">
+</head>
+<body class="bg-white">
+
+    <div class="music-control" id="musicToggle">
+        <div class="music-bars">
+            <span></span><span></span><span></span><span></span>
+        </div>
+        <i data-lucide="music" class="w-6 h-6"></i>
+        <audio id="bgMusic" loop>
+            <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" type="audio/mpeg">
+        </audio>
+    </div>
+
+    <!-- LIVE ACTIVITY -->
+    <div id="liveActivity" class="live-activity">
+        <div class="activity-dot"></div>
+        <p id="activityText" class="text-sm font-semibold text-gray-700"></p>
+    </div>
+
+    <!-- NAVBAR -->
+    <nav class="navbar w-full">
+        <div class="container flex justify-between items-center px-4">
+            <a href="#" class="text-2xl font-black text-white logo-text transition-colors duration-300">🌈 Ecopark</a>
+            <div class="hidden md:flex gap-8 items-center text-white nav-links">
+                <a href="#mision" class="hover:text-yellow-400 transition-colors">Misión</a>
+                <a href="#servicios" class="hover:text-yellow-400 transition-colors">Servicios</a>
+                <a href="#gastronomia" class="hover:text-yellow-400 transition-colors">Restaurante</a>
+                <a href="#contacto" class="btn btn-primary px-6 py-2">Reservar</a>
+            </div>
+            <button class="md:hidden text-white">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
+            </button>
+        </div>
+    </nav>
+
+    <!-- HERO SECTION -->
+    <section class="hero relative">
+        <video autoplay muted loop playsinline class="hero-video">
+            <source src="https://media.istockphoto.com/id/1324395874/video/aerial-view-of-lush-green-jungle-canopy.mp4?s=mp4-640x640-is" type="video/mp4">
+        </video>
+        <div class="hero-overlay"></div>
+        <div class="hero-content px-4">
+            <h1 class="hero-title reveal">Donde la <span class="text-green-400">Naturaleza</span> cobra <span class="text-yellow-400">Vida</span></h1>
+            <p class="text-xl md:text-2xl text-gray-200 mb-10 max-w-2xl mx-auto reveal" style="transition-delay: 0.2s">
+                Tu microaventura emocional a solo 3 horas de Bogotá. Un mundo diseñado para despertar tus sentidos.
+            </p>
+            <div class="flex flex-col sm:flex-row gap-4 justify-center reveal" style="transition-delay: 0.4s">
+                <a href="#servicios" class="btn btn-primary px-10 py-4 text-lg">Explorar Servicios</a>
+                <a href="https://wa.me/573102200917" class="btn border-2 border-white text-white hover:bg-white hover:text-green-900 px-10 py-4 text-lg">Hablemos por WhatsApp</a>
+            </div>
+        </div>
+        <div class="absolute bottom-10 left-1/2 transform -translate-x-1/2 animate-bounce text-white opacity-50">
+            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path></svg>
+        </div>
+    </section>
+
+    <!-- MISSION & PURPOSE -->
+    <section id="mision" class="section-padding mission-section">
+        <div class="container">
+            <div class="mission-card glass-card p-12 reveal">
+                <div>
+                    <h2 class="text-4xl font-black text-green-900 mb-6">Nuestra Misión</h2>
+                    <p class="text-lg text-gray-600 mb-8 leading-relaxed">
+                        En Ecopark Mundo de Colores, nuestra misión es reconectar al ser humano con la naturaleza a través de experiencias cromáticas y sensoriales que promuevan el bienestar emocional y la alegría familiar.
+                    </p>
+                    <h2 class="text-4xl font-black text-green-900 mb-6">Propósito</h2>
+                    <p class="text-lg text-gray-600 leading-relaxed">
+                        Existimos para ser un refugio de color y vida, donde cada visitante, desde el más pequeño hasta el más grande, encuentre un espacio para reír, aventurarse y crear recuerdos inolvidables en el corazón del Llano.
+                    </p>
+                </div>
+                <div class="relative">
+                    <img src="https://images.unsplash.com/photo-1501854140801-50d01698950b?w=800&h=600&fit=crop" alt="Misión" class="rounded-3xl shadow-2xl">
+                    <div class="absolute -bottom-6 -right-6 bg-yellow-400 p-8 rounded-2xl shadow-xl hidden lg:block">
+                        <p class="text-3xl font-black text-green-900">+10k</p>
+                        <p class="text-sm font-bold text-green-800">Visitantes Felices</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SERVICES SECTION -->
+    <section id="servicios" class="section-padding bg-gray-50 relative">
+        <div class="wave-divider wave-top">
+            <svg data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 120" preserveAspectRatio="none" fill="#f9fafb">
+                <path d="M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V0H0V27.35A600.21,600.21,0,0,0,321.39,56.44Z"></path>
+            </svg>
+        </div>
+        
+        <div class="container">
+            <div class="text-center mb-20 reveal">
+                <h2 class="text-5xl font-black text-green-900 mb-4">Nuestras Experiencias</h2>
+                <p class="text-xl text-gray-500">Haz clic en cada tarjeta para sumergirte en la aventura</p>
+            </div>
+
+            <div class="services-grid">
+                <!-- Resbalador -->
+                <div class="service-card-3d reveal" style="transition-delay: 0.1s"
+                     data-title="Resbalador de Colores" 
+                     data-color="#ef4444"
+                     data-icon="zap"
+                     data-intensity="Adrenalina Pura"
+                     data-description="Siente la velocidad en el resbalador más largo de la región. Una explosión de color y risas para todas las edades. ¡Atrévete a vivirlo!"
+                     data-images="https://images.unsplash.com/photo-1533777857889-4be7c70b33f7?w=800,https://images.unsplash.com/photo-1519046904884-53103b34b206?w=800">
+                    <div class="card-inner">
+                        <div class="card-front">
+                            <img src="https://images.unsplash.com/photo-1533777857889-4be7c70b33f7?w=600&h=400&fit=crop" class="card-img" alt="Resbalador">
+                            <div class="card-content">
+                                <span class="tag tag-red">Adrenalina</span>
+                                <h3 class="text-2xl font-bold text-white mb-2">⚡ Resbalador Gigante</h3>
+                                <div class="flex justify-between items-center mt-4">
+                                    <button class="btn-card-primary">Explorar</button>
+                                    <i data-lucide="plus-circle" class="text-white opacity-50"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Columpio 360 -->
+                <div class="service-card-3d reveal" style="transition-delay: 0.2s"
+                     data-title="Columpio 360" 
+                     data-color="#8b5cf6"
+                     data-icon="refresh-cw"
+                     data-intensity="Vértigo Emocionante"
+                     data-description="Mira el mundo desde otra perspectiva. Un giro completo que desafía la gravedad y te hace sentir el verdadero poder de la libertad."
+                     data-images="https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=800,https://images.unsplash.com/photo-1514326640560-7d063ef2aed5?w=800">
+                    <div class="card-inner">
+                        <div class="card-front">
+                            <img src="https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=600&h=400&fit=crop" class="card-img" alt="Columpio">
+                            <div class="card-content">
+                                <span class="tag tag-purple">Aventura</span>
+                                <h3 class="text-2xl font-bold text-white mb-2">🔄 Columpio 360</h3>
+                                <div class="flex justify-between items-center mt-4">
+                                    <button class="btn-card-primary">Explorar</button>
+                                    <i data-lucide="plus-circle" class="text-white opacity-50"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Piscina -->
+                <div class="service-card-3d reveal" 
+                     data-title="Piscina Refrescante" 
+                     data-color="#2563eb"
+                     data-icon="droplets"
+                     data-intensity="Calma Total"
+                     data-description="Sumerge tus sentidos en nuestras aguas cristalinas. Rodeada de vegetación, nuestra piscina es el oasis perfecto para desconectarte del mundo."
+                     data-images="https://images.unsplash.com/photo-1519046904884-53103b34b206?w=800,https://images.unsplash.com/photo-1540553016722-983e48a2cd10?w=800">
+                    <div class="card-inner">
+                        <div class="card-front">
+                            <img src="https://images.unsplash.com/photo-1519046904884-53103b34b206?w=600&h=400&fit=crop" class="card-img" alt="Piscina">
+                            <div class="card-content">
+                                <span class="tag tag-blue" style="background:#2563eb; color:white">Relax</span>
+                                <h3 class="text-2xl font-bold text-white mb-2">💧 Piscina Refrescante</h3>
+                                <div class="flex justify-between items-center mt-4">
+                                    <button class="btn-card-primary">Explorar</button>
+                                    <i data-lucide="plus-circle" class="text-white opacity-50"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Granja -->
+                <div class="service-card-3d reveal" style="transition-delay: 0.1s"
+                     data-title="Granja Interactiva" 
+                     data-color="#ea580c"
+                     data-icon="heart"
+                     data-intensity="Diversión Familiar"
+                     data-description="Conoce a nuestros animales, aprende sobre la vida en el campo y vive momentos tiernos en familia. Una experiencia educativa y llena de amor."
+                     data-images="https://images.unsplash.com/photo-1500595046743-cd271d694d30?w=800,https://images.unsplash.com/photo-1516467508483-a7212febe31a?w=800">
+                    <div class="card-inner">
+                        <div class="card-front">
+                            <img src="https://images.unsplash.com/photo-1500595046743-cd271d694d30?w=600&h=400&fit=crop" class="card-img" alt="Granja">
+                            <div class="card-content">
+                                <span class="tag" style="background:#ea580c; color:white">Familia</span>
+                                <h3 class="text-2xl font-bold text-white mb-2">🐷 Granja Interactiva</h3>
+                                <div class="flex justify-between items-center mt-4">
+                                    <button class="btn-card-primary">Explorar</button>
+                                    <i data-lucide="plus-circle" class="text-white opacity-50"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Restaurante -->
+                <div class="service-card-3d reveal" style="transition-delay: 0.2s"
+                     data-title="Restaurante Mundo de Colores" 
+                     data-color="#d97706"
+                     data-icon="utensils"
+                     data-intensity="Gastronomía a la Carta"
+                     data-description="Disfruta de una variada oferta gastronómica con los mejores cortes de carne, pescados frescos y mariscos. Calidad gourmet en medio de la naturaleza."
+                     data-images="https://images.unsplash.com/photo-1555939594-58d7cb561537?w=800,https://images.unsplash.com/photo-1544025162-d76694265947?w=800">
+                    <div class="card-inner">
+                        <div class="card-front">
+                            <img src="https://images.unsplash.com/photo-1555939594-58d7cb561537?w=600&h=400&fit=crop" class="card-img" alt="Restaurante">
+                            <div class="card-content">
+                                <span class="tag" style="background:#d97706; color:white">Gastronomía</span>
+                                <h3 class="text-2xl font-bold text-white mb-2">🍽️ Platos a la Carta</h3>
+                                <div class="flex justify-between items-center mt-4">
+                                    <button class="btn-card-primary">Explorar</button>
+                                    <i data-lucide="plus-circle" class="text-white opacity-50"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- MODAL DETALLE -->
+    <div id="serviceModal" class="modal">
+        <div class="modal-overlay"></div>
+        <div class="modal-container glass-card">
+            <button class="modal-close"><i data-lucide="x"></i></button>
+            <div class="modal-body">
+                <div class="modal-header">
+                    <div class="flex items-center gap-4 mb-4">
+                        <div id="modalIcon" class="p-3 rounded-2xl text-white"></div>
+                        <div>
+                            <span id="modalIntensity" class="text-xs font-bold uppercase tracking-widest opacity-70"></span>
+                            <h2 id="modalTitle" class="text-4xl font-black"></h2>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <!-- Carousel -->
+                    <div class="swiper serviceSwiper rounded-3xl overflow-hidden shadow-2xl">
+                        <div class="swiper-wrapper" id="modalCarouselItems">
+                            <!-- Items dinámicos -->
+                        </div>
+                        <div class="swiper-pagination"></div>
+                        <div class="swiper-button-next"></div>
+                        <div class="swiper-button-prev"></div>
+                    </div>
+
+                    <div class="flex flex-col justify-between">
+                        <div>
+                            <p id="modalDescription" class="text-lg text-gray-600 mb-8 leading-relaxed"></p>
+                            
+                            <!-- Interacción -->
+                            <div class="bg-gray-50 p-6 rounded-2xl mb-8">
+                                <h4 class="font-bold mb-4 flex items-center gap-2">
+                                    <i data-lucide="message-square" class="w-5 h-5"></i> 
+                                    Comentarios (<span id="commentCount">0</span>)
+                                </h4>
+                                <div id="commentsList" class="space-y-4 mb-4 max-h-[200px] overflow-y-auto">
+                                    <!-- Comentarios dinámicos aquí -->
+                                </div>
+                                <div class="flex gap-2">
+                                    <input type="text" id="commentInput" placeholder="Comparte tu experiencia..." class="flex-grow bg-white border border-gray-200 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-green-500 outline-none">
+                                    <button id="submitComment" class="bg-green-600 text-white p-2 rounded-lg hover:bg-green-700 transition-colors">
+                                        <i data-lucide="send" class="w-4 h-4"></i>
+                                    </button>
+                                </div>
+                                <p class="text-[10px] text-gray-400 mt-2 italic">* Los comentarios se guardan localmente para esta demostración.</p>
+                            </div>
+                        </div>
+
+                        <a id="modalReserveBtn" href="#" class="btn btn-primary w-full py-5 text-xl flex items-center justify-center gap-3">
+                            <i data-lucide="calendar"></i> Reservar Ahora
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- GASTRONOMIA DETAIL -->
+    <section id="gastronomia" class="section-padding bg-gray-50 overflow-hidden relative">
+        <div class="container">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+                <div class="reveal">
+                    <h2 class="text-5xl font-black text-orange-700 mb-8">Sabores que Enamoran</h2>
+                    <p class="text-lg text-gray-600 mb-8 leading-relaxed">
+                        En nuestro restaurante, cada plato es una obra de arte. Ofrecemos una variada carta nacional e internacional con ingredientes frescos y el toque secreto de la casa. Desde desayunos tradicionales hasta especialidades de mar y tierra.
+                    </p>
+                    <div class="grid grid-cols-2 gap-4 mb-10">
+                        <div class="bg-white p-4 rounded-xl shadow-sm border-l-4 border-orange-500">
+                            <p class="font-bold text-orange-800">🥩 Carnes</p>
+                            <p class="text-sm text-gray-500">Cortes Premium</p>
+                        </div>
+                        <div class="bg-white p-4 rounded-xl shadow-sm border-l-4 border-blue-500">
+                            <p class="font-bold text-blue-800">🐟 Pescados</p>
+                            <p class="text-sm text-gray-500">Frescura total</p>
+                        </div>
+                    </div>
+                    <button id="openMenuBtn" class="btn btn-primary bg-orange-600 hover:bg-orange-700 text-lg px-10 py-5 shadow-xl">
+                        <i data-lucide="book-open" class="mr-2"></i> Ver Carta Digital
+                    </button>
+                </div>
+                <div class="relative reveal" style="transition-delay: 0.2s">
+                    <div class="grid grid-cols-2 gap-4">
+                        <img src="https://images.unsplash.com/photo-1544025162-d76694265947?w=400&h=500&fit=crop" alt="Corte de Carne" class="rounded-2xl shadow-xl mt-8">
+                        <img src="https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?w=400&h=500&fit=crop" alt="Salmón" class="rounded-2xl shadow-xl">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- MODAL MENU DIGITAL -->
+    <div id="menuModal" class="modal">
+        <div class="modal-overlay"></div>
+        <div class="modal-container glass-card" style="max-width: 800px;">
+            <button class="modal-close" id="closeMenuBtn"><i data-lucide="x"></i></button>
+            <div class="modal-body p-4">
+                <h2 class="text-3xl font-black text-center mb-8">📖 Nuestra Carta Digital</h2>
+                
+                <div class="space-y-8">
+                    <!-- Entradas -->
+                    <div class="menu-category">
+                        <h3 class="text-xl font-bold text-orange-700 border-b-2 border-orange-200 mb-4 pb-2">🥗 Entradas</h3>
+                        <div class="space-y-3">
+                            <div class="flex justify-between"><span>Patacón con Ahogado</span> <span class="font-bold">$15.000</span></div>
+                            <div class="flex justify-between"><span>Porción de Chicharrón</span> <span class="font-bold">$25.000</span></div>
+                            <div class="flex justify-between"><span>Camarones Apanados</span> <span class="font-bold">$25.000</span></div>
+                            <div class="flex justify-between"><span>Crema de Camarón</span> <span class="font-bold">$30.000</span></div>
+                        </div>
+                    </div>
+
+                    <!-- Carnes -->
+                    <div class="menu-category">
+                        <h3 class="text-xl font-bold text-red-700 border-b-2 border-red-200 mb-4 pb-2">🥩 Carnes</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-3">
+                            <div class="flex justify-between"><span>Punta de Anca</span> <span class="font-bold">$50.000</span></div>
+                            <div class="flex justify-between"><span>Churrasco</span> <span class="font-bold">$50.000</span></div>
+                            <div class="flex justify-between"><span>Baby Beef</span> <span class="font-bold">$50.000</span></div>
+                            <div class="flex justify-between"><span>Lomo Cerdo BBQ</span> <span class="font-bold">$40.000</span></div>
+                            <div class="flex justify-between"><span>Lengua Mundo de Colores</span> <span class="font-bold">$45.000</span></div>
+                            <div class="flex justify-between"><span>Pechuga Gratinada</span> <span class="font-bold">$38.000</span></div>
+                        </div>
+                    </div>
+
+                    <!-- Pescados -->
+                    <div class="menu-category">
+                        <h3 class="text-xl font-bold text-blue-700 border-b-2 border-blue-200 mb-4 pb-2">🐟 Pescados y Mariscos</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-3">
+                            <div class="flex justify-between"><span>Amarillo Monseñor</span> <span class="font-bold">$50.000</span></div>
+                            <div class="flex justify-between"><span>Cazuela de Mariscos</span> <span class="font-bold">$50.000</span></div>
+                            <div class="flex justify-between"><span>Mojarra Frita</span> <span class="font-bold">$35.000</span></div>
+                            <div class="flex justify-between"><span>Salmón Salsa Camarón</span> <span class="font-bold">$65.000</span></div>
+                            <div class="flex justify-between"><span>Salmón a la Plancha</span> <span class="font-bold">$50.000</span></div>
+                        </div>
+                    </div>
+
+                    <!-- Picadas y Más -->
+                    <div class="menu-category">
+                        <h3 class="text-xl font-bold text-purple-700 border-b-2 border-purple-200 mb-4 pb-2">🍔 Picadas y Hamburguesas</h3>
+                        <div class="space-y-3">
+                            <div class="flex justify-between"><span>Picada para 4 Personas</span> <span class="font-bold">$120.000</span></div>
+                            <div class="flex justify-between"><span>Picada para 2 Personas</span> <span class="font-bold">$70.000</span></div>
+                            <div class="flex justify-between"><span>Hamburguesa de la Casa</span> <span class="font-bold">$27.000</span></div>
+                            <div class="flex justify-between"><span>Menú Infantil (Nuggets/Res)</span> <span class="font-bold">$25.000</span></div>
+                        </div>
+                    </div>
+
+                    <!-- Desayunos -->
+                    <div class="menu-category">
+                        <h3 class="text-xl font-bold text-yellow-700 border-b-2 border-yellow-200 mb-4 pb-2">🍳 Desayunos</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-3">
+                            <div class="flex justify-between"><span>Huevos Mexicanos (Combo)</span> <span class="font-bold">$23.000</span></div>
+                            <div class="flex justify-between"><span>Caldo de Costilla</span> <span class="font-bold">$15.000</span></div>
+                            <div class="flex justify-between"><span>Omelette (Combo)</span> <span class="font-bold">$25.000</span></div>
+                            <div class="flex justify-between"><span>Huevos Pericos (Combo)</span> <span class="font-bold">$15.000</span></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-12 text-center">
+                    <p class="text-gray-500 text-sm mb-4">* Los precios pueden variar según temporada.</p>
+                    <a href="https://wa.me/573102200917?text=Hola!%20Quiero%20reservar%20una%20mesa%20y%20hacer%20un%20pedido." class="btn btn-whatsapp px-8 py-3">Pedir por WhatsApp</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- AMIGOS DE LA GRANJA -->
+    <section class="section-padding bg-white relative overflow-hidden">
+        <div class="container text-center">
+            <h2 class="text-5xl font-black text-green-900 mb-4">Conoce a nuestros Amigos</h2>
+            <p class="text-xl text-gray-500 mb-16">Los verdaderos protagonistas de Ecopark</p>
+            <div class="grid grid-cols-2 md:grid-cols-5 gap-8">
+                <div class="reveal group">
+                    <div class="text-7xl mb-4 transform group-hover:scale-110 transition-transform cursor-pointer">🐮</div>
+                    <h3 class="text-xl font-bold text-green-800">La Vaca Lola</h3>
+                    <p class="text-sm text-gray-400">Nuestra consentida</p>
+                </div>
+                <div class="reveal group" style="transition-delay: 0.1s">
+                    <div class="text-7xl mb-4 transform group-hover:scale-110 transition-transform cursor-pointer">🐰</div>
+                    <h3 class="text-xl font-bold text-green-800">Conejitos</h3>
+                    <p class="text-sm text-gray-400">Saltarines y suaves</p>
+                </div>
+                <div class="reveal group" style="transition-delay: 0.2s">
+                    <div class="text-7xl mb-4 transform group-hover:scale-110 transition-transform cursor-pointer">🐷</div>
+                    <h3 class="text-xl font-bold text-green-800">Marranitos</h3>
+                    <p class="text-sm text-gray-400">Muy divertidos</p>
+                </div>
+                <div class="reveal group" style="transition-delay: 0.3s">
+                    <div class="text-7xl mb-4 transform group-hover:scale-110 transition-transform cursor-pointer">🐔</div>
+                    <h3 class="text-xl font-bold text-green-800">Gallinas</h3>
+                    <p class="text-sm text-gray-400">Campesinas puras</p>
+                </div>
+                <div class="reveal group" style="transition-delay: 0.4s">
+                    <div class="text-7xl mb-4 transform group-hover:scale-110 transition-transform cursor-pointer">🦜</div>
+                    <h3 class="text-xl font-bold text-green-800">Aves</h3>
+                    <p class="text-sm text-gray-400">Colores en vuelo</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- TESTIMONIOS -->
+    <section class="section-padding bg-green-900 text-white">
+        <div class="container">
+            <div class="text-center mb-16">
+                <h2 class="text-5xl font-black mb-4">Lo que dicen de nosotros</h2>
+                <p class="text-xl text-green-200">Experiencias que dejan huella</p>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="glass-card p-8 reveal" style="background: rgba(255,255,255,0.1)">
+                    <p class="text-lg italic mb-6">"Un lugar mágico para los niños. El resbalador es increíble y la comida deliciosa. ¡Súper recomendado!"</p>
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 bg-yellow-400 rounded-full"></div>
+                        <div>
+                            <p class="font-bold">Familia Rodríguez</p>
+                            <p class="text-sm text-green-300">Bogotá</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="glass-card p-8 reveal" style="background: rgba(255,255,255,0.1); transition-delay: 0.1s">
+                    <p class="text-lg italic mb-6">"La conexión con la naturaleza es real. Las rutas de ecoguía me ayudaron a desconectarme totalmente."</p>
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 bg-blue-400 rounded-full"></div>
+                        <div>
+                            <p class="font-bold">Andrés Gómez</p>
+                            <p class="text-sm text-green-300">Villavicencio</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="glass-card p-8 reveal" style="background: rgba(255,255,255,0.1); transition-delay: 0.2s">
+                    <p class="text-lg italic mb-6">"Organizamos el cumpleaños de mi hijo aquí y fue un éxito total. La atención es de primera clase."</p>
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 bg-red-400 rounded-full"></div>
+                        <div>
+                            <p class="font-bold">Claudia P.</p>
+                            <p class="text-sm text-green-300">Cali</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA FINAL -->
+    <section id="contacto" class="section-padding bg-yellow-400">
+        <div class="container text-center max-w-3xl">
+            <h2 class="text-5xl font-black text-green-900 mb-8">¿Listo para vivir la aventura?</h2>
+            <p class="text-xl text-green-800 mb-12">No dejes para mañana los colores que puedes vivir hoy. Reserva tu pasaporte y asegura tu lugar.</p>
+            <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                <a href="https://wa.me/573102200917" class="btn btn-primary bg-green-900 text-xl px-12 py-5 shadow-2xl">Reservar por WhatsApp</a>
+                <a href="tel:+573102200917" class="btn border-2 border-green-900 text-green-900 text-xl px-12 py-5">Llamar Ahora</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="bg-gray-900 text-gray-400 py-16">
+        <div class="container px-4">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
+                <div class="col-span-1 md:col-span-2">
+                    <h3 class="text-3xl font-black text-white mb-6">🌈 Ecopark</h3>
+                    <p class="mb-6 max-w-sm">Mundo de Colores SAS. Tu refugio emocional en el corazón de los Llanos Orientales. Donde la naturaleza y la alegría se encuentran.</p>
+                    <div class="flex gap-4">
+                        <a href="#" class="w-10 h-10 bg-gray-800 rounded-lg flex items-center justify-center hover:bg-green-600 transition-colors">IG</a>
+                        <a href="#" class="w-10 h-10 bg-gray-800 rounded-lg flex items-center justify-center hover:bg-green-600 transition-colors">FB</a>
+                        <a href="#" class="w-10 h-10 bg-gray-800 rounded-lg flex items-center justify-center hover:bg-green-600 transition-colors">TK</a>
+                    </div>
+                </div>
+                <div>
+                    <h4 class="text-white font-bold mb-6">Enlaces Rápidos</h4>
+                    <ul class="space-y-4">
+                        <li><a href="#servicios" class="hover:text-white transition">Nuestros Servicios</a></li>
+                        <li><a href="#mision" class="hover:text-white transition">Misión y Propósito</a></li>
+                        <li><a href="#gastronomia" class="hover:text-white transition">Restaurante</a></li>
+                        <li><a href="#" class="hover:text-white transition">Términos y Condiciones</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-white font-bold mb-6">Contacto</h4>
+                    <ul class="space-y-4">
+                        <li>📍 Villavicencio, Meta</li>
+                        <li>📞 +57 310 2200917</li>
+                        <li>📧 info@ecoparkcolores.com</li>
+                        <li>⏰ Sáb - Dom: 9am - 5pm</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="border-t border-gray-800 pt-8 text-center text-sm">
+                <p>&copy; 2026 Ecopark Mundo de Colores SAS. Todos los derechos reservados. Diseñado con 💚 para ti.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- WHATSAPP FLOAT -->
+    <a href="https://wa.me/573102200917" class="whatsapp-float">
+        <svg class="w-10 h-10" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.67-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.076 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421-7.403h-.004c-1.325 0-2.651-.402-3.798-1.159l-.273-.161-2.822.738.753-2.752-.177-.282C2.38 6.693 1.968 5.41 1.968 4.059 1.968 2.18 3.748.399 5.627.399c.493 0 .988.057 1.466.169C8.572.73 10.35 2.51 10.35 4.389c0 1.747-.844 3.373-2.298 4.309-.724.472-1.586.725-2.461.725z"/></svg>
+    </a>
+
+    <script src="script.js"></script>
+</body>
+</html>
+
