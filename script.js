@@ -328,5 +328,44 @@ document.addEventListener('DOMContentLoaded', () => {
         setInterval(showActivity, 15000); // Cada 15 segundos
     }, 4000);
 
-    console.log('🚀 Ecopark V2 - Experience Ready');
+    // 8. SMART WHATSAPP TOGGLE
+    const whatsappBubble = document.getElementById('whatsappBubble');
+    const whatsappWindow = document.getElementById('whatsappWindow');
+    if (whatsappBubble && whatsappWindow) {
+        whatsappBubble.addEventListener('click', () => {
+            whatsappWindow.classList.toggle('active');
+        });
+    }
+
+    // 9. CURSOR AURA
+    const cursorAura = document.getElementById('cursorAura');
+    if (cursorAura) {
+        document.addEventListener('mousemove', (e) => {
+            cursorAura.style.left = e.clientX + 'px';
+            cursorAura.style.top = e.clientY + 'px';
+        });
+    }
+
+    // 10. ANIMAL HUNT GAME
+    const animals = document.querySelectorAll('.hidden-animal');
+    let foundAnimals = new Set();
+
+    animals.forEach(animal => {
+        animal.addEventListener('click', () => {
+            const name = animal.dataset.animal;
+            if (!foundAnimals.has(name)) {
+                foundAnimals.add(name);
+                animal.style.opacity = "0.3";
+                animal.style.transform = "scale(0.5)";
+                
+                if (foundAnimals.size === 3) {
+                    alert("¡FELICITACIONES! 🌈 Has encontrado a todos los Amigos del Bosque. Muestra este mensaje en taquilla para un postre de cortesía.");
+                } else {
+                    alert(`¡Encontraste al ${name}! Te faltan ${3 - foundAnimals.size} para el premio.`);
+                }
+            }
+        });
+    });
+
+    console.log('🚀 Ecopark V3 - Interactive Experience Ready');
 });

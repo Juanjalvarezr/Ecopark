@@ -562,6 +562,112 @@ body {
 }
 
 /* ========================================
+   SMART WHATSAPP CHAT
+   ======================================== */
+
+.whatsapp-chat-container {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    z-index: 2000;
+}
+
+.whatsapp-bubble {
+    width: 60px;
+    height: 60px;
+    background: #25d366;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    box-shadow: 0 10px 30px rgba(37, 211, 102, 0.4);
+    cursor: pointer;
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.whatsapp-bubble:hover {
+    transform: scale(1.1) rotate(10deg);
+}
+
+.whatsapp-window {
+    position: absolute;
+    bottom: 80px;
+    right: 0;
+    width: 300px;
+    background: white;
+    border-radius: 24px;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.15);
+    overflow: hidden;
+    transform: translateY(20px) scale(0.9);
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.whatsapp-window.active {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+    pointer-events: all;
+}
+
+.chat-header {
+    background: #075e54;
+    padding: 20px;
+    color: white;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.chat-body {
+    padding: 20px;
+}
+
+.chat-msg {
+    background: #f0f0f0;
+    padding: 12px;
+    border-radius: 0 15px 15px 15px;
+    font-size: 14px;
+    color: #444;
+    margin-bottom: 20px;
+}
+
+.chat-btn {
+    display: block;
+    width: 100%;
+    padding: 10px 15px;
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 12px;
+    text-align: left;
+    font-size: 13px;
+    font-weight: 600;
+    color: #075e54;
+    margin-bottom: 10px;
+    transition: all 0.2s;
+}
+
+.chat-btn:hover {
+    background: #e7f3f1;
+    border-color: #25d366;
+    transform: translateX(5px);
+}
+
+/* Cursor Follower */
+.cursor-aura {
+    width: 20px;
+    height: 20px;
+    background: radial-gradient(circle, rgba(74, 222, 128, 0.4) 0%, transparent 70%);
+    border-radius: 50%;
+    position: fixed;
+    pointer-events: none;
+    z-index: 9999;
+    mix-blend-mode: screen;
+    transition: transform 0.1s ease-out;
+}
+
+/* ========================================
    SCROLLBAR
    ======================================== */
 

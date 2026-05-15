@@ -11,6 +11,8 @@
     <meta name="description" content="Vive una microaventura sensorial a solo 3 horas de Bogotá. Descubre cómo los colores transforman tu estado de ánimo.">
 </head>
 <body class="bg-white">
+    <div class="cursor-aura" id="cursorAura"></div>
+    <div class="cursor-aura" id="cursorAura"></div>
 
     <div class="music-control" id="musicToggle">
         <div class="music-bars">
@@ -519,10 +521,34 @@
         </div>
     </footer>
 
-    <!-- WHATSAPP FLOAT -->
-    <a href="https://wa.me/573102200917" class="whatsapp-float">
-        <svg class="w-10 h-10" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.67-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.076 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421-7.403h-.004c-1.325 0-2.651-.402-3.798-1.159l-.273-.161-2.822.738.753-2.752-.177-.282C2.38 6.693 1.968 5.41 1.968 4.059 1.968 2.18 3.748.399 5.627.399c.493 0 .988.057 1.466.169C8.572.73 10.35 2.51 10.35 4.389c0 1.747-.844 3.373-2.298 4.309-.724.472-1.586.725-2.461.725z"/></svg>
-    </a>
+    <!-- SMART WHATSAPP CHAT -->
+    <div class="whatsapp-chat-container">
+        <div class="whatsapp-window" id="whatsappWindow">
+            <div class="chat-header">
+                <div class="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center">
+                    <i data-lucide="message-circle" class="text-white"></i>
+                </div>
+                <div>
+                    <p class="font-bold">Ecopark Ayuda</p>
+                    <p class="text-[10px] opacity-80">En línea ahora</p>
+                </div>
+            </div>
+            <div class="chat-body">
+                <div class="chat-msg">¡Hola! 🌈 Bienvenido a Ecopark. ¿Cómo podemos ayudarte hoy?</div>
+                <button class="chat-btn" onclick="window.open('https://wa.me/573102200917?text=Hola!%20Quiero%20reservar%20para%20este%20fin%20de%20semana', '_blank')">📅 Reservar para el fin de semana</button>
+                <button class="chat-btn" onclick="window.open('https://wa.me/573102200917?text=Quisiera%20conocer%20los%20precios%20y%20paquetes', '_blank')">💰 Ver Precios y Paquetes</button>
+                <button class="chat-btn" onclick="window.open('https://wa.me/573102200917?text=Necesito%20la%20ubicacion%20exacta', '_blank')">📍 Cómo llegar</button>
+            </div>
+        </div>
+        <div class="whatsapp-bubble" id="whatsappBubble">
+            <i data-lucide="message-circle" class="w-8 h-8"></i>
+        </div>
+    </div>
+
+    <!-- HIDDEN ANIMALS (GAME) -->
+    <div class="hidden-animal" style="position: absolute; top: 120vh; left: 10%; cursor: pointer; z-index: 50; font-size: 24px;" data-animal="pájaro">🦜</div>
+    <div class="hidden-animal" style="position: absolute; top: 250vh; right: 15%; cursor: pointer; z-index: 50; font-size: 24px;" data-animal="conejo">🐰</div>
+    <div class="hidden-animal" style="position: absolute; bottom: 100px; left: 20%; cursor: pointer; z-index: 50; font-size: 24px;" data-animal="vaca">🐮</div>
 
     <script src="script.js"></script>
 </body>
