@@ -688,11 +688,24 @@ body {
     100% { transform: translate(-50%, -50%) scale(1.5); opacity: 0; }
 }
 
-/* Mobile Adjustments */
+/* Mobile Adjustments (Compact) */
 @media (max-width: 768px) {
+    .section-padding {
+        padding: 60px 0;
+    }
+    .hero-title {
+        font-size: 2.8rem;
+    }
     .whatsapp-window {
         width: calc(100vw - 40px);
         right: -10px;
+    }
+    .container {
+        padding-left: 20px;
+        padding-right: 20px;
+    }
+    .grid {
+        gap: 20px;
     }
 }
 
