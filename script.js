@@ -337,16 +337,45 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // 9. CURSOR AURA
+    // 9. CURSOR AURA & TOUCH BURST
     const cursorAura = document.getElementById('cursorAura');
-    if (cursorAura) {
-        document.addEventListener('mousemove', (e) => {
+    
+    // Mouse Tracking
+    document.addEventListener('mousemove', (e) => {
+        if (cursorAura) {
             cursorAura.style.left = e.clientX + 'px';
             cursorAura.style.top = e.clientY + 'px';
+        }
+    });
+
+    // Touch Sparkle for Mobile
+    document.addEventListener('touchstart', (e) => {
+        const touch = e.touches[0];
+        const burst = document.createElement('div');
+        burst.className = 'touch-burst';
+        burst.style.left = touch.clientX + 'px';
+        burst.style.top = touch.clientY + 'px';
+        document.body.appendChild(burst);
+        
+        setTimeout(() => burst.remove(), 600);
+    }, { passive: true });
+
+    // 10. MOBILE 3D SCROLL TRIGGER
+    if (window.innerWidth < 768) {
+        window.addEventListener('scroll', () => {
+            cards.forEach(card => {
+                const rect = card.getBoundingClientRect();
+                const center = window.innerHeight / 2;
+                if (Math.abs(rect.top + rect.height/2 - center) < 100) {
+                    card.style.transform = 'perspective(1000px) rotateX(10deg) scale(1.05)';
+                } else {
+                    card.style.transform = 'perspective(1000px) rotateX(0) scale(1)';
+                }
+            });
         });
     }
 
-    // 10. ANIMAL HUNT GAME
+    // 11. ANIMAL HUNT GAME
     const animals = document.querySelectorAll('.hidden-animal');
     let foundAnimals = new Set();
 

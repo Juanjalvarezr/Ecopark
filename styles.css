@@ -654,7 +654,11 @@ body {
     transform: translateX(5px);
 }
 
-/* Cursor Follower */
+/* Cursor Follower (Hide on mobile) */
+@media (hover: none) and (pointer: coarse) {
+    .cursor-aura { display: none !important; }
+}
+
 .cursor-aura {
     width: 20px;
     height: 20px;
@@ -665,6 +669,31 @@ body {
     z-index: 9999;
     mix-blend-mode: screen;
     transition: transform 0.1s ease-out;
+}
+
+/* Touch Burst Effect */
+.touch-burst {
+    position: fixed;
+    width: 100px;
+    height: 100px;
+    background: radial-gradient(circle, rgba(255,255,255,0.6) 0%, transparent 70%);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 10000;
+    animation: burstOut 0.6s ease-out forwards;
+}
+
+@keyframes burstOut {
+    0% { transform: translate(-50%, -50%) scale(0); opacity: 1; }
+    100% { transform: translate(-50%, -50%) scale(1.5); opacity: 0; }
+}
+
+/* Mobile Adjustments */
+@media (max-width: 768px) {
+    .whatsapp-window {
+        width: calc(100vw - 40px);
+        right: -10px;
+    }
 }
 
 /* ========================================
