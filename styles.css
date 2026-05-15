@@ -149,21 +149,48 @@ body {
     background: var(--primary);
 }
 
-.hero-video {
+.hero {
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    position: relative;
+    background: linear-gradient(-45deg, #1a2e05, #064e3b, #0c4a6e, #1e1b4b);
+    background-size: 400% 400%;
+    animation: gradientBG 15s ease infinite;
+}
+
+@keyframes gradientBG {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+.hero-clouds {
     position: absolute;
-    top: 0;
+    bottom: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    object-fit: cover;
-    opacity: 0.6;
+    pointer-events: none;
+    z-index: 5;
 }
 
-.hero-overlay {
+.cloud {
     position: absolute;
-    inset: 0;
-    background: linear-gradient(to bottom, rgba(0,0,0,0.3), rgba(0,0,0,0.7));
+    bottom: -20%;
+    width: 150%;
+    left: -25%;
+    height: 60%;
+    background: radial-gradient(circle at 50% 100%, rgba(255,255,255,0.2) 0%, transparent 70%);
+    filter: blur(60px);
+    transform: translateY(var(--cloud-y, 0));
 }
+
+.cloud-1 { opacity: 0.6; height: 40%; }
+.cloud-2 { opacity: 0.4; height: 60%; }
+.cloud-3 { opacity: 0.3; height: 80%; }
 
 .hero-content {
     position: relative;
@@ -171,6 +198,8 @@ body {
     text-align: center;
     color: white;
     max-width: 900px;
+    transform: scale(var(--hero-scale, 1)) translateY(var(--hero-y, 0));
+    opacity: var(--hero-opacity, 1);
 }
 
 .hero-title {

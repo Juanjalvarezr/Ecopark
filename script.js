@@ -225,13 +225,37 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // 5. NAVBAR SCROLL EFFECT
+    // 5. NAVBAR & PARALLAX SCROLL EFFECT
     const navbar = document.querySelector('.navbar');
+    const heroContent = document.querySelector('.hero-content');
+    const clouds = document.querySelectorAll('.cloud');
+
     window.addEventListener('scroll', () => {
-        if (window.scrollY > 50) {
+        const scrolled = window.scrollY;
+        
+        // Navbar
+        if (scrolled > 50) {
             navbar.classList.add('scrolled');
         } else {
             navbar.classList.remove('scrolled');
+        }
+
+        // Hero Parallax
+        if (scrolled < window.innerHeight) {
+            const scale = 1 - (scrolled / window.innerHeight) * 0.3;
+            const opacity = 1 - (scrolled / window.innerHeight) * 1.5;
+            const y = scrolled * 0.5;
+            
+            heroContent.style.setProperty('--hero-scale', scale);
+            heroContent.style.setProperty('--hero-opacity', opacity);
+            heroContent.style.setProperty('--hero-y', `${y}px`);
+
+            // Clouds movement
+            clouds.forEach((cloud, index) => {
+                const speed = (index + 1) * 0.4;
+                const cloudY = -(scrolled * speed);
+                cloud.style.setProperty('--cloud-y', `${cloudY}px`);
+            });
         }
     });
 
