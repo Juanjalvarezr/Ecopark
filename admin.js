@@ -962,7 +962,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Con debounce para búsqueda - evita renderizado excesivo
     document.getElementById('filtroFecha')?.addEventListener('change', () => {
         try {
-            renderCitasTable();
+            window.renderCitasTableFull();
         } catch (error) {
             console.error('Error en filtro de fecha:', error);
             showToast('Error al filtrar por fecha', 'error');
@@ -971,7 +971,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     document.getElementById('filtroEstado')?.addEventListener('change', () => {
         try {
-            renderCitasTable();
+            window.renderCitasTableFull();
         } catch (error) {
             console.error('Error en filtro de estado:', error);
             showToast('Error al filtrar por estado', 'error');
@@ -981,7 +981,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Debounce en búsqueda para mejor performance
     const debouncedSearch = debounce(() => {
         try {
-            renderCitasTable();
+            window.renderCitasTableFull();
         } catch (error) {
             console.error('Error en búsqueda:', error);
             showToast('Error en la búsqueda', 'error');
@@ -1025,7 +1025,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 citas = citas.filter(c => c.id !== id);
                 saveCitas();
-                renderCitasTable();
+                window.renderCitasTableFull();
                 updateDashboard();
                 showToast('Cita eliminada ✓', 'success');
             }

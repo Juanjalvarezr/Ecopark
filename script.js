@@ -173,6 +173,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Mostrar precios específicos en el modal si existen
         const modalPriceEl = document.getElementById('modalServicePrice');
         if (modalPriceEl) {
+            const cms = JSON.parse(localStorage.getItem('ecopark_cms') || '{}');
             let priceText = "";
             if (data.serviceKey === "resbalador_colores") {
                 priceText = `Adultos: ${cms[`service_${data.serviceKey}_precio_adulto`] || 'N/A'} / Niños: ${cms[`service_${data.serviceKey}_precio_nino`] || 'N/A'}`;
