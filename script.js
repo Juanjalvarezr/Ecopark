@@ -488,6 +488,23 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
+    // ==================== ACCESO SECRETO AL ADMIN ====================
+    // Opción 1: Por parámetro de URL (ej: index.html?acceso=eco)
+    const urlParamsAdmin = new URLSearchParams(window.location.search);
+    if (urlParamsAdmin.get('acceso') === 'eco') {
+        window.location.href = 'admin.html';
+    }
+
+    // Opción 2: Atajo de teclado secreto (Escribir "admin" en el teclado)
+    let adminBuffer = "";
+    document.addEventListener('keydown', (e) => {
+        adminBuffer += e.key.toLowerCase();
+        if (adminBuffer.endsWith('admin')) {
+            window.location.href = 'admin.html';
+        }
+        if (adminBuffer.length > 10) adminBuffer = adminBuffer.substring(5);
+    });
+
     console.log('🚀 Ecopark V3 - Interactive Experience Ready');
 
     // ==================== CMS READER ====================

@@ -262,14 +262,19 @@ document.addEventListener('DOMContentLoaded', () => {
     const loginScreen = document.getElementById('loginScreen');
     const loginForm = document.getElementById('loginForm');
     const loginError = document.getElementById('loginError');
+    const navLinks = document.querySelectorAll('.nav-link');
+    const sections = document.querySelectorAll('.content-section');
+    const pageTitle = document.getElementById('pageTitle');
 
     const navigateToSection = (sectionId) => {
-        const targetLink = document.querySelector(`.nav-link[data-section="${sectionId}"]`);
+        const targetLink = Array.from(navLinks).find(l => l.dataset.section === sectionId);
         if (targetLink) {
             targetLink.click();
         } else {
             // Fallback manual si el click falla
-            sections.forEach(s => { s.classList.remove('active'); s.style.display = 'none'; });
+            if (sections) {
+                sections.forEach(s => { s.classList.remove('active'); s.style.display = 'none'; });
+            }
             const section = document.getElementById(sectionId);
             if (section) { section.classList.add('active'); section.style.display = 'block'; }
             if (pageTitle) pageTitle.textContent = sectionId.toUpperCase();
