@@ -15,25 +15,36 @@ document.addEventListener('DOMContentLoaded', () => {
     const loginForm = document.getElementById('loginForm');
     const loginError = document.getElementById('loginError');
 
+    const navigateToSection = (sectionId) => {
+        const targetLink = document.querySelector(`.nav-link[data-section="${sectionId}"]`);
+        if (targetLink) {
+            targetLink.click();
+        } else {
+            // Fallback manual si el click falla
+            sections.forEach(s => s.classList.remove('active'));
+            const section = document.getElementById(sectionId);
+            if (section) section.classList.add('active');
+            if (pageTitle) pageTitle.textContent = sectionId.toUpperCase();
+        }
+    };
+
     const checkAuth = () => {
-        // Usamos sessionStorage para que la sesión se cierre al cerrar la pestaña
         if (sessionStorage.getItem('ecopark_authenticated') === 'true') {
-            if (loginScreen) loginScreen.style.display = 'none';
-            // Activar dashboard por defecto
-            document.querySelector('.nav-link[data-section="dashboard"]')?.click();
+            if (loginScreen) loginScreen.classList.add('hidden');
+            navigateToSection('dashboard');
         }
     };
 
     loginForm?.addEventListener('submit', (e) => {
         e.preventDefault();
-        const user = document.getElementById('adminUser').value.trim().toLowerCase();
-        const pass = document.getElementById('adminPass').value;
+        const user = document.getElementById('adminUser')?.value.trim().toLowerCase();
+        const pass = document.getElementById('adminPass')?.value;
 
         if (user === AUTH_CONFIG.user.toLowerCase() && pass === AUTH_CONFIG.pass) {
             sessionStorage.setItem('ecopark_authenticated', 'true');
-            if (loginScreen) loginScreen.style.display = 'none';
-            // Activar dashboard al entrar
-            document.querySelector('.nav-link[data-section="dashboard"]')?.click();
+            if (loginScreen) loginScreen.classList.add('hidden');
+            console.log("Login exitoso, navegando a dashboard...");
+            navigateToSection('dashboard');
         } else {
             if (loginError) loginError.classList.remove('hidden');
             setTimeout(() => loginError?.classList.add('hidden'), 3000);
