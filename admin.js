@@ -19,6 +19,8 @@ document.addEventListener('DOMContentLoaded', () => {
         // Usamos sessionStorage para que la sesión se cierre al cerrar la pestaña
         if (sessionStorage.getItem('ecopark_authenticated') === 'true') {
             if (loginScreen) loginScreen.style.display = 'none';
+            // Activar dashboard por defecto
+            document.querySelector('.nav-link[data-section="dashboard"]')?.click();
         }
     };
 
@@ -30,6 +32,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (user === AUTH_CONFIG.user.toLowerCase() && pass === AUTH_CONFIG.pass) {
             sessionStorage.setItem('ecopark_authenticated', 'true');
             if (loginScreen) loginScreen.style.display = 'none';
+            // Activar dashboard al entrar
+            document.querySelector('.nav-link[data-section="dashboard"]')?.click();
         } else {
             if (loginError) loginError.classList.remove('hidden');
             setTimeout(() => loginError?.classList.add('hidden'), 3000);
@@ -41,8 +45,6 @@ document.addEventListener('DOMContentLoaded', () => {
         sessionStorage.removeItem('ecopark_authenticated');
         window.location.reload();
     });
-
-    checkAuth();
 
     // Initialize Lucide Icons
     if (typeof lucide !== 'undefined') {
@@ -1624,6 +1626,9 @@ document.addEventListener('DOMContentLoaded', () => {
         if (window.renderCitasTableFull) window.renderCitasTableFull();
         updateAsistidos();
     }, 200);
+
+    // Ejecutar autenticación al final para asegurar que el DOM y los listeners estén listos
+    checkAuth();
 
     console.log('🚀 Admin Panel - Ecopark Full CRM Ready');
 });
