@@ -1225,7 +1225,18 @@ document.addEventListener('DOMContentLoaded', () => {
             'footer_descripcion', 'habeas_data_texto', 'terminos_texto',
             'hero_titulo', 'hero_subtitulo',
             'srv_resbalador_desc', 'srv_columpio_desc', 'srv_piscina_desc', 'srv_granja_desc', 'srv_restaurante_desc'
-            // Nuevos campos de precios y logo
+            // Nuevos campos de precios y visibilidad de atracciones
+            ,'service_resbalador_colores_precio_adulto'
+            ,'service_resbalador_colores_precio_nino'
+            ,'service_resbalador_colores_visible'
+            ,'service_columpio_360_precio'
+            ,'service_columpio_360_visible'
+            ,'service_piscina_refrescante_visible'
+            ,'service_granja_interactiva_precio_alimentar'
+            ,'service_granja_interactiva_visible'
+            ,'service_restaurante_mundo_colores_visible'
+
+            // Precios de pasaportes
             ,'pasaporte_experiencia_precio'
             ,'plan_cumpleanos_precio'
             ,'escapada_bogotana_precio'
@@ -1281,6 +1292,58 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div class="cms-field-group md:col-span-2">
                     <label class="form-label">URL del Logo Principal</label>
                     <input type="url" id="cms_logo_url" class="form-input" placeholder="https://tu-dominio.com/logo.png" value="${cmsData.logo_url || ''}">
+                </div>
+            </div>
+
+            <p class="cms-section-title">🎢 Precios y Visibilidad de Atracciones</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="cms-field-group">
+                    <label class="form-label">Resbalador de Colores (Adultos)</label>
+                    <input type="text" id="cms_service_resbalador_colores_precio_adulto" class="form-input" placeholder="$20.000" value="${cmsData.service_resbalador_colores_precio_adulto || ''}">
+                    <div class="form-checkbox">
+                        <input type="checkbox" id="cms_service_resbalador_colores_visible" ${cmsData.service_resbalador_colores_visible !== false ? 'checked' : ''}>
+                        <label for="cms_service_resbalador_colores_visible">Visible en la Landing</label>
+                    </div>
+                </div>
+                <div class="cms-field-group">
+                    <label class="form-label">Resbalador de Colores (Niños)</label>
+                    <input type="text" id="cms_service_resbalador_colores_precio_nino" class="form-input" placeholder="$10.000" value="${cmsData.service_resbalador_colores_precio_nino || ''}">
+                </div>
+
+                <div class="cms-field-group">
+                    <label class="form-label">Columpio 360</label>
+                    <input type="text" id="cms_service_columpio_360_precio" class="form-input" placeholder="$15.000" value="${cmsData.service_columpio_360_precio || ''}">
+                    <div class="form-checkbox">
+                        <input type="checkbox" id="cms_service_columpio_360_visible" ${cmsData.service_columpio_360_visible !== false ? 'checked' : ''}>
+                        <label for="cms_service_columpio_360_visible">Visible en la Landing</label>
+                    </div>
+                </div>
+
+                <div class="cms-field-group">
+                    <label class="form-label">Piscina Refrescante</label>
+                    <input type="text" id="cms_service_piscina_refrescante_precio" class="form-input" placeholder="Gratis / $X.XXX" value="${cmsData.service_piscina_refrescante_precio || ''}">
+                    <div class="form-checkbox">
+                        <input type="checkbox" id="cms_service_piscina_refrescante_visible" ${cmsData.service_piscina_refrescante_visible !== false ? 'checked' : ''}>
+                        <label for="cms_service_piscina_refrescante_visible">Visible en la Landing</label>
+                    </div>
+                </div>
+
+                <div class="cms-field-group">
+                    <label class="form-label">Granja Interactiva (Alimentar)</label>
+                    <input type="text" id="cms_service_granja_interactiva_precio_alimentar" class="form-input" placeholder="$5.000" value="${cmsData.service_granja_interactiva_precio_alimentar || ''}">
+                    <div class="form-checkbox">
+                        <input type="checkbox" id="cms_service_granja_interactiva_visible" ${cmsData.service_granja_interactiva_visible !== false ? 'checked' : ''}>
+                        <label for="cms_service_granja_interactiva_visible">Visible en la Landing</label>
+                    </div>
+                </div>
+
+                <div class="cms-field-group">
+                    <label class="form-label">Restaurante Mundo de Colores</label>
+                    <input type="text" class="form-input" value="Precios en carta digital" disabled>
+                    <div class="form-checkbox">
+                        <input type="checkbox" id="cms_service_restaurante_mundo_colores_visible" ${cmsData.service_restaurante_mundo_colores_visible !== false ? 'checked' : ''}>
+                        <label for="cms_service_restaurante_mundo_colores_visible">Visible en la Landing</label>
+                    </div>
                 </div>
             </div>
 

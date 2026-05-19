@@ -171,6 +171,20 @@ document.addEventListener('DOMContentLoaded', () => {
         `).join('');
         modal.classList.add('active');
         document.body.style.overflow = 'hidden';
+
+        // Mostrar precios específicos en el modal si existen
+        const modalPriceEl = document.getElementById('modalServicePrice');
+        if (modalPriceEl) {
+            let priceText = "";
+            if (data.serviceKey === "resbalador_colores") {
+                priceText = `Adultos: ${cms[`service_${data.serviceKey}_precio_adulto`] || 'N/A'} / Niños: ${cms[`service_${data.serviceKey}_precio_nino`] || 'N/A'}`;
+            } else if (data.serviceKey === "granja_interactiva") {
+                priceText = `Alimentar: ${cms[`service_${data.serviceKey}_precio_alimentar`] || 'N/A'}`;
+            } else if (cms[`service_${data.serviceKey}_precio`]) {
+                priceText = `Precio: ${cms[`service_${data.serviceKey}_precio`]}`;
+            }
+            modalPriceEl.textContent = priceText;
+        }
         
         loadComments(data.title);
 
@@ -207,7 +221,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 intensity: card.dataset.intensity,
                 color: card.dataset.color,
                 icon: card.dataset.icon,
-                images: card.dataset.images
+                images: card.dataset.images,
+                serviceKey: card.dataset.serviceKey // Pasar la clave del servicio
             };
             openModal(data);
         });
@@ -568,6 +583,50 @@ document.addEventListener('DOMContentLoaded', () => {
         const mainLogo = document.getElementById('mainLogo');
         if (mainLogo) mainLogo.src = cms.logo_url;
     }
+
+    // ==================== GESTIÓN DE ATRACCIONES (PRECIOS Y VISIBILIDAD) ====================
+    const serviceCards = document.querySelectorAll('.service-card-3d');
+    serviceCards.forEach(card => {
+        const serviceKey = card.dataset.serviceKey;
+        if (!serviceKey) return;
+
+        // Visibilidad
+        const isVisible = cms[`service_${serviceKey}_visible`];
+        if (isVisible === false) { // Si está explícitamente en false
+            card.classList.add('hidden');
+        } else {
+            card.classList.remove('hidden');
+        }
+
+        // Precios
+        const priceDisplayEl = card.querySelector('.service-price');
+        if (priceDisplayEl) {
+            let priceText = "";
+            if (serviceKey === "resbalador_colores") {
+                const precioAdulto = cms[`service_${serviceKey}_precio_adulto`];
+                const precioNino = cms[`service_${serviceKey}_precio_nino`];
+                if (precioAdulto && precioNino) {
+                    priceText = `Adultos: ${precioAdulto} / Niños: ${precioNino}`;
+                } else if (precioAdulto) {
+                    priceText = `Adultos: ${precioAdulto}`;
+                } else if (precioNino) {
+                    priceText = `Niños: ${precioNino}`;
+                }
+            } else if (serviceKey === "granja_interactiva") {
+                const precioAlimentar = cms[`service_${serviceKey}_precio_alimentar`];
+                if (precioAlimentar) {
+                    priceText = `Alimentar: ${precioAlimentar}`;
+                } else {
+                    priceText = "Entrada gratis";
+                }
+            } else if (cms[`service_${serviceKey}_precio`]) {
+                priceText = `Precio: ${cms[`service_${serviceKey}_precio`]}`;
+            } else if (serviceKey === "piscina_refrescante") {
+                priceText = cms[`service_${serviceKey}_precio`] || "Entrada gratis";
+            }
+            priceDisplayEl.textContent = priceText;
+        }
+    });
     // ==================== MODALES LEGALES ====================
     window.abrirModalLegal = (tipo) => {
         const id = tipo === 'habeas' ? 'modalHabeas' : 'modalTerminos';
