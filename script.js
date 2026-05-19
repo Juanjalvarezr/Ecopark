@@ -156,7 +156,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (supabaseClient) {
                 const categoryMap = { "Resbalador de Colores": "resbalador", "Columpio 360": "eventos", "Piscina Refrescante": "piscina", "Granja Interactiva": "granja", "Restaurante Mundo de Colores": "restaurante" };
                 const { data: dbMedios } = await supabaseClient.from('medios').select('url').eq('categoria', categoryMap[data.title]).eq('tipo', 'foto');
-                if (dbMedios) images = [...dbMedios.map(m => m.url), ...images];
+                if (dbMedios && dbMedios.length > 0) images = [...dbMedios.map(m => m.url), ...images];
             }
 
             swiperWrapper.innerHTML = images.map(img => `

@@ -305,7 +305,8 @@ document.addEventListener('DOMContentLoaded', () => {
             .channel('admin-sync')
             .on('postgres_changes', { event: '*', schema: 'public', table: 'reservas' }, (payload) => {
                 console.log('🔔 Cambio en Reservas:', payload.eventType);
-                loadCitas().then(() => { window.renderCitasTableFull(); updateDashboard(); });
+                // Recargar datos y actualizar UI
+                loadCitas().then(() => { window.renderCitasTableFull(); updateDashboard(); updateAsistidos(); });
             })
             .on('postgres_changes', { event: '*', schema: 'public', table: 'medios' }, () => loadMedios())
             .on('postgres_changes', { event: '*', schema: 'public', table: 'banners' }, () => loadBanners())
@@ -1199,8 +1200,9 @@ window.showToast = showToast;
             if (!url && !file) throw new Error('Sube un archivo o pega una URL');
 
             if (file && supabaseClient) {
-                const fileName = `${Date.now()}_${file.name}`;
-                const { error: uploadError } = await supabaseClient.storage.from('medios-ecopark').upload(fileName, file);
+                const optimizedFile = await optimizeImage(file);
+                const fileName = `${Date.now()}_${optimizedFile.name.replace(/\s/g, '_')}`;
+                const { error: uploadError } = await supabaseClient.storage.from('medios-ecopark').upload(fileName, optimizedFile);
                 if (uploadError) throw uploadError;
                 const { data } = supabaseClient.storage.from('medios-ecopark').getPublicUrl(fileName);
                 url = data.publicUrl;
@@ -1592,8 +1594,7 @@ window.showToast = showToast;
 
     // ============ ENVIAR AGRADECIMIENTO WHATSAPP ============
     window.enviarAgradecimiento = (id) => {
-        const citas = JSON.parse(localStorage.getItem('ecopark_citas') || '[]');
-        const cita = citas.find(c => c.id === id);
+        const cita = citas.find(c => c.id === id); // Usar el array 'citas' global ya cargado
         if (!cita) return;
 
         const cms = JSON.parse(localStorage.getItem('ecopark_cms') || '{}');
@@ -1619,14 +1620,14 @@ window.showToast = showToast;
         
         // Registrar que se envió
         cita.agradecimiento_enviado = true;
-        localStorage.setItem('ecopark_citas', JSON.stringify(citas));
+        saveCitas(cita); // Guardar cambio en Supabase
         showAdminToast('Mensaje de agradecimiento preparado en WhatsApp', 'success');
         window.renderCitasTableFull();
     };
 
     // ============ MARCAR ASISTIDO ============
     window.marcarAsistido = async (id) => {
-        const citas = JSON.parse(localStorage.getItem('ecopark_citas') || '[]');
+        // Usar el array 'citas' global que se mantiene sincronizado
         const cita = citas.find(c => c.id === id);
         if (!cita) return;
 
@@ -1647,11 +1648,7 @@ window.showToast = showToast;
         }
 
         await saveCitas(cita);
-        // Re-render table
-        setTimeout(() => {
-            const event = new CustomEvent('refresh-citas');
-            document.dispatchEvent(event);
-        }, 100);
+        // No hace falta dispatchEvent, el listener Realtime lo hará por nosotros
     };
 
     // ============ EXPORTAR CSV ============
@@ -2020,7 +2017,6 @@ window.showToast = showToast;
 
     // Expose helpers
     window.editCitaFull = (id) => {
-        const citas = JSON.parse(localStorage.getItem('ecopark_citas') || '[]');
         const cita = citas.find(c => c.id === id);
         if (!cita) return;
         document.getElementById('citaId').value = cita.id;
@@ -2080,7 +2076,6 @@ window.showToast = showToast;
     const updateAsistidos = () => {
         const el = document.getElementById('totalAsistidos');
         if (!el) return;
-        const citas = JSON.parse(localStorage.getItem('ecopark_citas') || '[]');
         const now = new Date();
         const mes = now.getMonth();
         const anio = now.getFullYear();
