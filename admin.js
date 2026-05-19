@@ -60,18 +60,22 @@ const validateCita = (cita) => {
  * SISTEMA DE NOTIFICACIONES MEJORADO
  * Toast con stack y auto-cierre
  */
-const toastContainer = (() => {
-    let container = document.getElementById('toast-container');
-    if (!container) {
-        container = document.createElement('div');
-        container.id = 'toast-container';
-        container.style.cssText = 'position:fixed;top:20px;right:20px;z-index:9999;display:flex;flex-direction:column;gap:8px;';
-        document.body.appendChild(container);
+let toastContainerElement = null;
+const getToastContainer = () => {
+    if (toastContainerElement) return toastContainerElement;
+    
+    toastContainerElement = document.getElementById('toast-container');
+    if (!toastContainerElement) {
+        toastContainerElement = document.createElement('div');
+        toastContainerElement.id = 'toast-container';
+        toastContainerElement.style.cssText = 'position:fixed;top:20px;right:20px;z-index:9999;display:flex;flex-direction:column;gap:8px;';
+        if (document.body) document.body.appendChild(toastContainerElement);
     }
-    return container;
-})();
+    return toastContainerElement;
+};
 
 const showNotification = (message, type = 'success', duration = 3000) => {
+    const container = getToastContainer();
     const toast = document.createElement('div');
     const bgColor = {
         success: '#10b981',
@@ -92,7 +96,7 @@ const showNotification = (message, type = 'success', duration = 3000) => {
         word-wrap:break-word;
     `;
     toast.textContent = message;
-    toastContainer.appendChild(toast);
+    container.appendChild(toast);
     
     const timeout = setTimeout(() => {
         toast.style.animation = 'slideOut 0.3s ease-out forwards';
@@ -362,10 +366,19 @@ document.addEventListener('DOMContentLoaded', () => {
                 showNotification('¡Bienvenido al sistema!', 'success');
                 return;
             } else {
-                console.error("❌ Error Supabase Auth:", error.message);
-                if (loginError) loginError.classList.remove('hidden');
-                setTimeout(() => loginError?.classList.add('hidden'), 3000);
+                console.warn("Supabase Auth falló, intentando login local...");
             }
+        }
+
+        // FALLBACK: Login local si Supabase no está configurado o el usuario es admin
+        if (user.toLowerCase() === AUTH_CONFIG.user && pass === AUTH_CONFIG.pass) {
+            sessionStorage.setItem('ecopark_authenticated', 'true');
+            if (loginScreen) loginScreen.style.display = 'none';
+            navigateToSection('dashboard');
+            showNotification('¡Bienvenido (Modo Local)!', 'success');
+        } else {
+            if (loginError) loginError.classList.remove('hidden');
+            setTimeout(() => loginError?.classList.add('hidden'), 3000);
         }
     });
 
@@ -526,8 +539,8 @@ document.addEventListener('DOMContentLoaded', () => {
             pageTitle.textContent = link.textContent.trim();
             
             // Refresh data
-            if (sectionId === 'dashboard') setTimeout(updateDashboard, 0); // Ensure DOM is ready
-            if (sectionId === 'citas') renderCitasTable();
+            if (sectionId === 'dashboard') setTimeout(updateDashboard, 50);
+            if (sectionId === 'citas') window.renderCitasTableFull();
             if (sectionId === 'calendario') renderCalendar();
             if (sectionId === 'medios') renderMedios();
             if (sectionId === 'reseñas') renderReviews();
@@ -771,7 +784,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             citaModal.classList.remove('active');
-            renderCitasTable();
+            window.renderCitasTableFull();
             updateDashboard();
             showToast(citaId ? 'Cita actualizada ✓' : 'Cita creada ✓', 'success');
         } catch (error) {
@@ -1028,8 +1041,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const message = dayCitas.map(c => 
             `${c.hora} - ${c.cliente} (${c.servicio})`
         ).join('\n');
-        
-        alert(`Citas para ${formatDate(dateStr)}:\n\n${message}`);
+
+        showNotification(`Citas para ${formatDate(dateStr)}: ${message}`, 'info', 5000);
     };
 
     // ==================== UTILITIES ====================
@@ -1048,9 +1061,9 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const addHours = (timeStr, hours) => {
-        const [hours, minutes] = timeStr.split(':').map(Number);
+        const [h, m] = timeStr.split(':').map(Number);
         const date = new Date();
-        date.setHours(hours + hours, minutes);
+        date.setHours(h + hours, m);
         return `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
     };
 
@@ -1667,12 +1680,20 @@ document.addEventListener('DOMContentLoaded', () => {
     // ============ CMS CONFIG ============
     let cmsData = {};
 
-    window.loadCmsConfig = () => {
+    window.loadCmsConfig = async () => {
+        if (supabaseClient) {
+            const { data, error } = await supabaseClient.from('cms_config').select('datos').eq('id', 'global_config').single();
+            if (!error && data) {
+                cmsData = data.datos;
+                localStorage.setItem('ecopark_cms', JSON.stringify(cmsData));
+                return;
+            }
+        }
         const stored = localStorage.getItem('ecopark_cms');
         cmsData = stored ? JSON.parse(stored) : {};
     };
 
-    const saveCmsConfig = () => {
+    const saveCmsConfig = async () => {
         const fields = [
             'rnt_numero', 'contacto_whatsapp', 'contacto_telefono',
             'contacto_email', 'contacto_direccion', 'horarios',
@@ -1700,7 +1721,10 @@ document.addEventListener('DOMContentLoaded', () => {
             if (el) cmsData[f] = el.value;
         });
         localStorage.setItem('ecopark_cms', JSON.stringify(cmsData));
-        showAdminToast('✅ Contenido publicado en la landing', 'success');
+        if (supabaseClient) {
+            await supabaseClient.from('cms_config').upsert({ id: 'global_config', datos: cmsData });
+        }
+        showAdminToast('✅ Contenido publicado en la nube y landing', 'success');
     };
 
     // ============ INJECT CMS SECTION INTO MAIN ============
@@ -2063,11 +2087,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Expose toast helper in this scope too
     const showAdminToast = (msg, type = 'success') => {
-        const t = document.createElement('div');
-        t.className = `toast ${type}`;
-        t.textContent = msg;
-        document.body.appendChild(t);
-        setTimeout(() => t.remove(), 3500);
+        showNotification(msg, type);
     };
     window.showAdminToast = showAdminToast;
 
@@ -2170,31 +2190,31 @@ document.addEventListener('DOMContentLoaded', () => {
     window.BackupManager = BackupManager;
 
     // ==================== INITIALIZATION ====================
-    // Cargamos configuraciones primero
-    loadWebhookConfig();
-    loadCmsConfig();
-    loadCitas();
-    loadGoogleConfig();
-    loadMedios();
-    loadBanners();
-    loadReviews();
-    loadMapsConfig();
+    const startApp = async () => {
+        loadWebhookConfig();
+        await loadCmsConfig();
+        await loadCitas();
+        loadGoogleConfig();
+        await loadMedios();
+        await loadBanners();
+        await loadReviews();
+        loadMapsConfig();
 
-    // Inyectamos secciones y actualizamos UI
-    injectCmsSection();
-    injectContenidoSection();
-    updateDashboard();
-    renderCitasTable();
-    renderCalendar();
-    renderMedios();
-    renderReviews();
-    renderBanners();
-
-    // Inicialización de tabla extendida
-    setTimeout(() => {
-        if (window.renderCitasTableFull) window.renderCitasTableFull();
+        // Inyectamos secciones y actualizamos UI
+        injectCmsSection();
+        injectContenidoSection();
+        updateDashboard();
+        
+        // Renderizado inicial (Usando solo las versiones Full)
+        window.renderCitasTableFull();
+        renderCalendar();
+        renderMedios();
+        renderReviews();
+        renderBanners();
         updateAsistidos();
-    }, 200);
+    };
+
+    startApp();
 
     // Sincronización entre pestañas: si se añade una reserva desde la landing, actualizamos el admin
     window.addEventListener('storage', (event) => {
