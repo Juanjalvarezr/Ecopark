@@ -94,7 +94,9 @@
     <!-- NAVBAR -->
     <nav class="navbar w-full">
         <div class="container flex justify-between items-center px-4">
-            <a href="#" class="text-2xl font-black text-white logo-text transition-colors duration-300" aria-label="Ecopark Inicio">🌈 Ecopark</a>
+            <a href="#" class="text-2xl font-black text-white logo-text transition-colors duration-300" aria-label="Ecopark Inicio">
+                <img id="mainLogo" src="https://via.placeholder.com/150x50?text=Ecopark" alt="Logo Ecopark" class="h-10 w-auto">
+            </a>
             <div class="hidden md:flex gap-8 items-center text-white nav-links">
                 <a href="#mision" class="hover:text-yellow-400 transition-colors">Misión</a>
                 <a href="#servicios" class="hover:text-yellow-400 transition-colors">Servicios</a>
@@ -131,7 +133,7 @@
             </p>
             <div class="flex flex-col sm:flex-row gap-4 justify-center reveal" style="transition-delay: 0.4s">
                 <a href="#servicios" class="btn btn-primary px-10 py-4 text-lg">Explorar Servicios</a>
-                <a href="https://wa.me/573102200917" class="btn border-2 border-white text-white hover:bg-white hover:text-green-900 px-10 py-4 text-lg transition-all duration-300" rel="noopener noreferrer">Hablemos por WhatsApp</a>
+                <a href="https://wa.me/573102200917" class="btn border-2 border-white text-white hover:bg-white hover:text-green-900 px-10 py-4 text-lg transition-all duration-300" target="_blank" rel="noopener noreferrer">Hablemos por WhatsApp</a>
             </div>
         </div>
         <div class="absolute bottom-10 left-1/2 transform -translate-x-1/2 animate-bounce text-white opacity-50">
@@ -426,10 +428,10 @@
     <!-- FORMULARIO DE RESERVAS -->
     <section id="reservar" class="section-padding reserva-section">
         <div class="container">
-            <div class="text-center mb-16 reveal">
+            <div class="text-center mb-8 md:mb-16 reveal">
                 <span class="tag" style="background:#fbbf24;color:#065f46">📅 Reservas Online</span>
-                <h2 class="text-5xl font-black text-white mb-4">Asegura tu Lugar</h2>
-                <p class="text-xl" style="color:rgba(255,255,255,0.8)">Completa el formulario y nuestro equipo confirma tu reserva en menos de 24 horas.</p>
+                <h2 class="text-3xl md:text-5xl font-black text-white mb-4">Asegura tu Lugar</h2>
+                <p class="text-base md:text-xl px-4" style="color:rgba(255,255,255,0.8)">Completa el formulario y nuestro equipo confirma tu reserva en menos de 24 horas.</p>
             </div>
             <div class="reserva-wrapper reveal">
                 <!-- Form -->
@@ -715,7 +717,7 @@
                         <a href="https://maps.app.goo.gl/Ks4tDmW3pYqKLKVV7" target="_blank" rel="noopener noreferrer" class="btn bg-white text-black hover:bg-gray-200 flex items-center gap-2">
                             <i data-lucide="map-pin"></i> Google Maps
                         </a>
-                        <a href="https://ul.waze.com/ul?ll=4.1420,-73.6266&navigate=yes" target="_blank" rel="noopener noreferrer" class="btn bg-[#33ccff] text-white hover:bg-[#2bb8e6] flex items-center gap-2 border-none">
+                        <a href="https://ul.waze.com/ul?ll=4.1420,-73.6266&navigate=yes" target="_blank" rel="noopener noreferrer" class="btn bg-[#33ccff] text-white hover:bg-[#2bb8e6] flex items-center gap-2 border-none" aria-label="Abrir en Waze">
                             <i data-lucide="navigation"></i> Abrir en Waze
                         </a>
                     </div>

@@ -4,6 +4,46 @@
    ======================================== */
 
 document.addEventListener('DOMContentLoaded', () => {
+    // ==================== AUTENTICACIÓN ====================
+    // Credenciales por defecto
+    const AUTH_CONFIG = {
+        user: 'admin',
+        pass: 'ecopark2026'
+    };
+
+    const loginScreen = document.getElementById('loginScreen');
+    const loginForm = document.getElementById('loginForm');
+    const loginError = document.getElementById('loginError');
+
+    const checkAuth = () => {
+        // Usamos sessionStorage para que la sesión se cierre al cerrar la pestaña
+        if (sessionStorage.getItem('ecopark_authenticated') === 'true') {
+            if (loginScreen) loginScreen.style.display = 'none';
+        }
+    };
+
+    loginForm?.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const user = document.getElementById('adminUser').value;
+        const pass = document.getElementById('adminPass').value;
+
+        if (user === AUTH_CONFIG.user && pass === AUTH_CONFIG.pass) {
+            sessionStorage.setItem('ecopark_authenticated', 'true');
+            if (loginScreen) loginScreen.style.display = 'none';
+        } else {
+            if (loginError) loginError.classList.remove('hidden');
+            setTimeout(() => loginError?.classList.add('hidden'), 3000);
+        }
+    });
+
+    const logoutBtn = document.getElementById('logoutBtn');
+    logoutBtn?.addEventListener('click', () => {
+        sessionStorage.removeItem('ecopark_authenticated');
+        window.location.reload();
+    });
+
+    checkAuth();
+
     // Initialize Lucide Icons
     if (typeof lucide !== 'undefined') {
         lucide.createIcons();
@@ -101,6 +141,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const navLinks = document.querySelectorAll('.nav-link');
     const sections = document.querySelectorAll('.content-section');
     const pageTitle = document.getElementById('pageTitle');
+    const dashboardSection = document.getElementById('dashboard');
 
     navLinks.forEach(link => {
         link.addEventListener('click', (e) => {
@@ -119,7 +160,7 @@ document.addEventListener('DOMContentLoaded', () => {
             pageTitle.textContent = link.textContent.trim();
             
             // Refresh data
-            if (sectionId === 'dashboard') updateDashboard();
+            if (sectionId === 'dashboard') setTimeout(updateDashboard, 0); // Ensure DOM is ready
             if (sectionId === 'citas') renderCitasTable();
             if (sectionId === 'calendario') renderCalendar();
             if (sectionId === 'medios') renderMedios();
@@ -129,6 +170,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // ==================== DASHBOARD ====================
+    let dashboardInitialized = false;
     const updateDashboard = () => {
         const today = new Date().toISOString().split('T')[0];
         const weekFromNow = new Date();
@@ -169,6 +211,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Servicios populares
         renderServiciosPopulares();
+
+        // Reseñas solicitadas esta semana
+        const oneWeekAgo = new Date();
+        oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+        const reviewsRequested = citas.filter(c => 
+            c.agradecimiento_enviado && 
+            c.timestamp_asistencia && // Usar timestamp_asistencia si está disponible, sino c.timestamp
+            new Date(c.timestamp_asistencia || c.timestamp) >= oneWeekAgo
+        ).length;
+        document.getElementById('reviewsRequestedWeek').textContent = reviewsRequested;
     };
 
     const renderCitasRecientes = () => {
@@ -1064,6 +1116,40 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
+    // ============ ENVIAR AGRADECIMIENTO WHATSAPP ============
+    window.enviarAgradecimiento = (id) => {
+        const citas = JSON.parse(localStorage.getItem('ecopark_citas') || '[]');
+        const cita = citas.find(c => c.id === id);
+        if (!cita) return;
+
+        const cms = JSON.parse(localStorage.getItem('ecopark_cms') || '{}');
+        const maps = JSON.parse(localStorage.getItem('ecopark_maps_config') || '{}');
+        
+        // Link de reseña: Si hay Place ID usar link directo, sino link de búsqueda
+        const reviewLink = maps.placeId 
+            ? `https://search.google.com/local/writereview?placeid=${maps.placeId}`
+            : `https://www.google.com/maps/search/Ecopark+Mundo+de+Colores+Villavicencio`;
+
+        const nombreCliente = (cita.cliente || 'Visitante').split(' ')[0];
+        
+        const mensaje = encodeURIComponent(
+            `¡Hola ${nombreCliente}! 🌈\n\n` +
+            `En *Ecopark Mundo de Colores* estamos muy felices de que nos hayas visitado hoy. 🍃\n\n` +
+            `Esperamos que hayas disfrutado de la naturaleza y el color. Nos encantaría conocer tu opinión, ¿podrías regalarnos una reseña en Google? Significaría mucho para nosotros:\n\n` +
+            `👇 Califica aquí:\n${reviewLink}\n\n` +
+            `¡Te esperamos pronto para más aventuras! ✨`
+        );
+
+        const tel = cita.telefono.replace(/\D/g, '');
+        window.open(`https://wa.me/${tel}?text=${mensaje}`, '_blank');
+        
+        // Registrar que se envió
+        cita.agradecimiento_enviado = true;
+        localStorage.setItem('ecopark_citas', JSON.stringify(citas));
+        showAdminToast('Mensaje de agradecimiento preparado en WhatsApp', 'success');
+        window.renderCitasTableFull();
+    };
+
     // ============ MARCAR ASISTIDO ============
     window.marcarAsistido = (id) => {
         const citas = JSON.parse(localStorage.getItem('ecopark_citas') || '[]');
@@ -1134,9 +1220,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const saveCmsConfig = () => {
         const fields = [
-            'rnt_numero','contacto_whatsapp','contacto_telefono',
-            'contacto_email','contacto_direccion','horarios',
-            'footer_descripcion','habeas_data_texto','terminos_texto'
+            'rnt_numero', 'contacto_whatsapp', 'contacto_telefono',
+            'contacto_email', 'contacto_direccion', 'horarios',
+            'footer_descripcion', 'habeas_data_texto', 'terminos_texto',
+            'hero_titulo', 'hero_subtitulo',
+            'srv_resbalador_desc', 'srv_columpio_desc', 'srv_piscina_desc', 'srv_granja_desc', 'srv_restaurante_desc'
+            // Nuevos campos de precios y logo
+            ,'pasaporte_experiencia_precio'
+            ,'plan_cumpleanos_precio'
+            ,'escapada_bogotana_precio'
         ];
         fields.forEach(f => {
             const el = document.getElementById(`cms_${f}`);
@@ -1185,6 +1277,62 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div class="cms-field-group md:col-span-2">
                     <label class="form-label">Dirección</label>
                     <input type="text" id="cms_contacto_direccion" class="form-input" placeholder="Villavicencio, Meta, Colombia" value="${cmsData.contacto_direccion || ''}">
+                </div>
+                <div class="cms-field-group md:col-span-2">
+                    <label class="form-label">URL del Logo Principal</label>
+                    <input type="url" id="cms_logo_url" class="form-input" placeholder="https://tu-dominio.com/logo.png" value="${cmsData.logo_url || ''}">
+                </div>
+            </div>
+
+            <p class="cms-section-title">🚀 Sección Hero (Principal)</p>
+            <div class="grid grid-cols-1 gap-4">
+                <div class="cms-field-group">
+                    <label class="form-label">Título Principal (HTML permitido)</label>
+                    <input type="text" id="cms_hero_titulo" class="form-input" value="${(cmsData.hero_titulo || 'Donde la <span class=&quot;text-green-400&quot;>Naturaleza</span> cobra <span class=&quot;text-yellow-400&quot;>Vida</span>').replace(/"/g, '&quot;')}" placeholder="Donde la Naturaleza cobra Vida">
+                </div>
+                <div class="cms-field-group">
+                    <label class="form-label">Subtítulo</label>
+                    <textarea id="cms_hero_subtitulo" class="form-input" rows="2">${cmsData.hero_subtitulo || 'Tu microaventura emocional a solo 3 horas de Bogotá. Un mundo diseñado para despertar tus sentidos.'}</textarea>
+                </div>
+            </div>
+
+            <p class="cms-section-title">🌟 Textos de Experiencias (Servicios)</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="cms-field-group">
+                    <label class="form-label">Descripción Resbalador</label>
+                    <textarea id="cms_srv_resbalador_desc" class="form-input" rows="2">${cmsData.srv_resbalador_desc || 'Siente la velocidad en el resbalador más largo de la región. Una explosión de color y risas para todas las edades.'}</textarea>
+                </div>
+                <div class="cms-field-group">
+                    <label class="form-label">Descripción Columpio 360</label>
+                    <textarea id="cms_srv_columpio_desc" class="form-input" rows="2">${cmsData.srv_columpio_desc || 'Mira el mundo desde otra perspectiva. Un giro completo que desafía la gravedad.'}</textarea>
+                </div>
+                <div class="cms-field-group">
+                    <label class="form-label">Descripción Piscina</label>
+                    <textarea id="cms_srv_piscina_desc" class="form-input" rows="2">${cmsData.srv_piscina_desc || 'Sumerge tus sentidos en nuestras aguas cristalinas. El oasis perfecto para desconectarte.'}</textarea>
+                </div>
+                <div class="cms-field-group">
+                    <label class="form-label">Descripción Granja</label>
+                    <textarea id="cms_srv_granja_desc" class="form-input" rows="2">${cmsData.srv_granja_desc || 'Conoce a nuestros animales, aprende sobre la vida en el campo y vive momentos tiernos en familia.'}</textarea>
+                </div>
+                <div class="cms-field-group">
+                    <label class="form-label">Descripción Restaurante</label>
+                    <textarea id="cms_srv_restaurante_desc" class="form-input" rows="2">${cmsData.srv_restaurante_desc || 'Disfruta de una variada oferta gastronómica con los mejores cortes de carne, pescados frescos y mariscos.'}</textarea>
+                </div>
+            </div>
+
+            <p class="cms-section-title">💰 Precios de Pasaportes</p>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="cms-field-group">
+                    <label class="form-label">Pasaporte Experiencia</label>
+                    <input type="text" id="cms_pasaporte_experiencia_precio" class="form-input" placeholder="$89.900" value="${cmsData.pasaporte_experiencia_precio || ''}">
+                </div>
+                <div class="cms-field-group">
+                    <label class="form-label">Plan Cumpleaños</label>
+                    <input type="text" id="cms_plan_cumpleanos_precio" class="form-input" placeholder="$54.900/niño" value="${cmsData.plan_cumpleanos_precio || ''}">
+                </div>
+                <div class="cms-field-group">
+                    <label class="form-label">Escapada Bogotana</label>
+                    <input type="text" id="cms_escapada_bogotana_precio" class="form-input" placeholder="$99.900" value="${cmsData.escapada_bogotana_precio || ''}">
                 </div>
             </div>
 
@@ -1294,10 +1442,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 <td style="text-align:center">${c.ninos || 0}</td>
                 <td><span class="status-badge ${estadoClass}">${estadoLabel}</span></td>
                 <td>
-                    <button onclick="marcarAsistido('${c.id}')" class="btn btn-sm ${c.asistido ? 'btn-outline' : 'btn-primary'}" title="${c.asistido ? 'Desmarcar asistencia' : 'Marcar como Asistido y enviar webhook'}">
-                        ${c.asistido ? '↩ Desmarcar' : '✅ Asistido'}
-                    </button>
-                    ${c.timestamp_asistencia ? `<div style="font-size:10px;color:#6b7280;margin-top:4px">${new Date(c.timestamp_asistencia).toLocaleString('es-CO')}</div>` : ''}
+                    <div class="flex flex-col gap-2">
+                        <button onclick="marcarAsistido('${c.id}')" class="btn btn-sm ${c.asistido ? 'btn-outline' : 'btn-primary'}" title="${c.asistido ? 'Desmarcar asistencia' : 'Marcar como Asistido'}">
+                            ${c.asistido ? '↩ Desmarcar' : '✅ Asistido'}
+                        </button>
+                        ${c.asistido ? `
+                            <button onclick="enviarAgradecimiento('${c.id}')" class="btn btn-sm bg-green-500 text-white hover:bg-green-600 flex items-center justify-center gap-1 border-none shadow-sm ${c.agradecimiento_enviado ? 'opacity-50' : ''}">
+                                <i data-lucide="message-circle" class="w-3 h-3"></i> ${c.agradecimiento_enviado ? 'Re-enviar' : 'Solicitar Reseña'}
+                            </button>
+                        ` : ''}
+                        ${c.timestamp_asistencia ? `<div style="font-size:10px;color:#6b7280;margin-top:4px">${new Date(c.timestamp_asistencia).toLocaleString('es-CO')}</div>` : ''}
+                    </div>
                 </td>
                 <td>
                     <div class="cita-actions">

@@ -12,7 +12,16 @@ document.addEventListener('DOMContentLoaded', () => {
     // 1. MUSIC CONTROLLER
     const musicToggle = document.getElementById('musicToggle');
     const bgMusic = document.getElementById('bgMusic');
+    const modalSound = document.getElementById('modalSound');
     let isPlaying = false;
+
+    const playModalSound = () => {
+        if (modalSound) {
+            modalSound.volume = 0.4;
+            modalSound.currentTime = 0;
+            modalSound.play().catch(err => console.log("SFX play blocked", err));
+        }
+    };
 
     if (musicToggle && bgMusic) {
         musicToggle.addEventListener('click', () => {
@@ -124,6 +133,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const openModal = (data) => {
         if (!modal) return;
         currentServiceTitle = data.title;
+
+        playModalSound();
         
         document.getElementById('modalTitle').textContent = data.title;
         document.getElementById('modalDescription').textContent = data.description;
@@ -133,14 +144,31 @@ document.addEventListener('DOMContentLoaded', () => {
         iconContainer.style.backgroundColor = data.color;
         iconContainer.innerHTML = `<i data-lucide="${data.icon}"></i>`;
         
-        // Populate Swiper
-        const images = data.images.split(',');
+        // Populate Swiper (Combine hardcoded and dynamic images from Admin/LocalStorage)
+        const uploadedMedia = getStorageData('ecopark_medios');
+        const categoryMap = {
+            "Resbalador de Colores": "Resbalador",
+            "Columpio 360": "Eventos",
+            "Piscina Refrescante": "Piscina",
+            "Granja Interactiva": "Granja",
+            "Restaurante Mundo de Colores": "Restaurante"
+        };
+        
+        const category = categoryMap[data.title];
+        const dynamicPhotos = uploadedMedia
+            .filter(m => m.type === 'Foto' && m.category === category)
+            .map(m => m.url);
+
+        let images = data.images.split(',').map(img => img.trim());
+        if (dynamicPhotos.length > 0) {
+            images = [...dynamicPhotos, ...images];
+        }
+
         swiperWrapper.innerHTML = images.map(img => `
             <div class="swiper-slide h-full">
-                <img src="${img.trim()}" class="w-full h-full object-cover">
+                <img src="${img}" class="w-full h-full object-cover rounded-2xl" loading="lazy" onerror="this.src='https://images.unsplash.com/photo-1501854140801-50d01698950b?w=800'">
             </div>
         `).join('');
-        
         modal.classList.add('active');
         document.body.style.overflow = 'hidden';
         
@@ -185,11 +213,15 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
+    window.closeModal = () => {
+        if (modal) modal.classList.remove('active');
+        if (menuModal) menuModal.classList.remove('active');
+        document.body.style.overflow = 'auto';
+        if (serviceSwiper) serviceSwiper.autoplay.stop();
+    };
+
     if (modalClose) {
-        modalClose.addEventListener('click', () => {
-            modal.classList.remove('active');
-            document.body.style.overflow = 'auto';
-        });
+        modalClose.addEventListener('click', closeModal);
     }
 
     // 4. MENU MODAL LOGIC
@@ -199,6 +231,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (openMenuBtn && menuModal) {
         openMenuBtn.addEventListener('click', () => {
+            playModalSound();
             menuModal.classList.add('active');
             document.body.style.overflow = 'hidden';
         });
@@ -206,8 +239,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (closeMenuBtn && menuModal) {
         closeMenuBtn.addEventListener('click', () => {
-            menuModal.classList.remove('active');
-            document.body.style.overflow = 'auto';
+            closeModal();
         });
     }
 
@@ -232,10 +264,18 @@ document.addEventListener('DOMContentLoaded', () => {
     const whatsappBubble = document.getElementById('whatsappBubble');
     const whatsappWindow = document.getElementById('whatsappWindow');
     const activityBubble = document.getElementById('liveActivity');
+    const scrollProgress = document.getElementById('scrollProgress');
 
     window.addEventListener('scroll', () => {
         const scrolled = window.scrollY;
-        
+        const totalHeight = document.documentElement.scrollHeight - window.innerHeight;
+        const progress = (scrolled / totalHeight) * 100;
+
+        if (scrollProgress) {
+            scrollProgress.style.width = `${progress}%`;
+            scrollProgress.style.backgroundColor = getComputedStyle(document.documentElement).getPropertyValue('--current-section-color');
+        }
+
         // Navbar
         if (scrolled > 50) {
             navbar.classList.add('scrolled');
@@ -307,6 +347,13 @@ document.addEventListener('DOMContentLoaded', () => {
             navLinks.classList.toggle('bg-green-900');
             navLinks.classList.toggle('p-8');
             navLinks.classList.toggle('text-center');
+        });
+
+        // Cerrar menú al hacer clic en un link (UX móvil)
+        navLinks.querySelectorAll('a').forEach(link => {
+            link.addEventListener('click', () => {
+                if (navLinks.classList.contains('flex-col')) mobileMenuBtn.click();
+            });
         });
     }
 
@@ -440,6 +487,59 @@ document.addEventListener('DOMContentLoaded', () => {
         if (el && val) { el.textContent = val; el.href = prefix + val; }
     };
 
+    // Actualización dinámica de textos del Hero
+    if (cms.hero_titulo) {
+        const heroTitle = document.querySelector('.hero-title');
+        if (heroTitle) heroTitle.innerHTML = cms.hero_titulo;
+    }
+    if (cms.hero_subtitulo) {
+        const heroDesc = document.querySelector('.hero-content p');
+        if (heroDesc) heroDesc.textContent = cms.hero_subtitulo;
+    }
+
+    // Actualización dinámica de descripciones de servicios (cards)
+    const updateCardDesc = (title, newDesc) => {
+        const card = document.querySelector(`.service-card-3d[data-title="${title}"]`);
+        if (card && newDesc) {
+            card.dataset.description = newDesc;
+        }
+    };
+
+    updateCardDesc("Resbalador de Colores", cms.srv_resbalador_desc);
+    updateCardDesc("Columpio 360", cms.srv_columpio_desc);
+    updateCardDesc("Piscina Refrescante", cms.srv_piscina_desc);
+    updateCardDesc("Granja Interactiva", cms.srv_granja_desc);
+    updateCardDesc("Restaurante Mundo de Colores", cms.srv_restaurante_desc);
+
+    // Actualización dinámica de precios de pasaportes
+    if (cms.pasaporte_experiencia_precio) {
+        const el = document.getElementById('pasaporte_experiencia_precio_display');
+        if (el) el.textContent = cms.pasaporte_experiencia_precio;
+    }
+    if (cms.plan_cumpleanos_precio) {
+        const el = document.getElementById('plan_cumpleanos_precio_display');
+        if (el) el.textContent = cms.plan_cumpleanos_precio;
+    }
+    if (cms.escapada_bogotana_precio) {
+        const el = document.getElementById('escapada_bogotana_precio_display');
+        if (el) el.textContent = cms.escapada_bogotana_precio;
+    }
+
+    // Actualización de los precios en los data-attributes de los pasaportes (si existen)
+    // No hay un modal de pasaportes, así que solo actualizamos el display.
+
+
+    // Sincronización de Botones de reserva en modales/tarjetas
+    // Si se quiere cambiar el número de WhatsApp centralizado
+    const contactWa = cms.contacto_whatsapp || '573102200917';
+    
+    // Actualizar botones de reserva específicos de la página
+    document.querySelectorAll('a[href^="https://wa.me/573102200917"]').forEach(btn => {
+        const currentUrl = new URL(btn.href);
+        const text = currentUrl.searchParams.get('text') || '';
+        btn.href = `https://wa.me/${contactWa}?text=${encodeURIComponent(text)}`;
+    });
+
     applyIfExists('footer_descripcion', cms.footer_descripcion);
     applyIfExists('footer_rnt', cms.rnt_numero ? `RNT N.° ${cms.rnt_numero}` : null);
     applyIfExists('footer_horario', cms.horarios);
@@ -463,10 +563,16 @@ document.addEventListener('DOMContentLoaded', () => {
         if (tEl) tEl.innerHTML = cms.terminos_texto;
     }
 
+    // Actualización dinámica del logo
+    if (cms.logo_url) {
+        const mainLogo = document.getElementById('mainLogo');
+        if (mainLogo) mainLogo.src = cms.logo_url;
+    }
     // ==================== MODALES LEGALES ====================
     window.abrirModalLegal = (tipo) => {
         const id = tipo === 'habeas' ? 'modalHabeas' : 'modalTerminos';
         const modal = document.getElementById(id);
+        playModalSound();
         if (modal) { modal.classList.add('active'); document.body.style.overflow = 'hidden'; }
         if (typeof lucide !== 'undefined') lucide.createIcons();
     };
@@ -580,6 +686,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 estado: 'pendiente',
                 asistido: false,
                 timestamp_asistencia: null,
+                agradecimiento_enviado: false, // Inicializar para el seguimiento de reseñas
                 syncGoogle: false,
                 timestamp: Date.now(),
                 fuente: 'landing'

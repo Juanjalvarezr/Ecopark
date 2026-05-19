@@ -10,6 +10,19 @@
     <link rel="stylesheet" href="admin.css">
 </head>
 <body class="bg-gray-100">
+    <!-- Pantalla de Inicio de Sesión -->
+    <div id="loginScreen" class="fixed inset-0 z-[3000] bg-green-900 flex items-center justify-center p-4">
+        <div class="bg-white p-8 rounded-3xl shadow-2xl w-full max-w-md text-center">
+            <h2 class="text-3xl font-black text-green-900 mb-6">🌈 Acceso Admin</h2>
+            <form id="loginForm" class="space-y-4">
+                <input type="text" id="adminUser" placeholder="Usuario" class="w-full p-4 border-2 border-gray-100 rounded-xl focus:border-green-500 outline-none" required>
+                <input type="password" id="adminPass" placeholder="Contraseña" class="w-full p-4 border-2 border-gray-100 rounded-xl focus:border-green-500 outline-none" required>
+                <button type="submit" class="w-full bg-green-600 text-white p-4 rounded-xl font-bold hover:bg-green-700 transition-colors">Entrar al Sistema</button>
+            </form>
+            <p id="loginError" class="text-red-500 text-sm mt-4 hidden">Credenciales incorrectas. Intenta de nuevo.</p>
+        </div>
+    </div>
+
     <!-- Sidebar -->
     <aside class="sidebar">
         <div class="sidebar-header">
@@ -43,9 +56,12 @@
             </a>
         </nav>
         <div class="sidebar-footer">
-            <a href="index.html" class="btn btn-outline">
+            <a href="index.html" class="btn btn-outline w-full mb-2">
                 <i data-lucide="home"></i> Ver Sitio
             </a>
+            <button id="logoutBtn" class="btn btn-danger w-full">
+                <i data-lucide="log-out"></i> Cerrar Sesión
+            </button>
         </div>
     </aside>
 
@@ -100,6 +116,16 @@
                     <div class="stat-info">
                         <p class="stat-label">Próxima Cita</p>
                         <p class="stat-value" id="proximaCita">--:--</p>
+                    </div>
+                </div>
+                <!-- Nuevo Stat Card para Reseñas Solicitadas -->
+                <div class="stat-card">
+                    <div class="stat-icon bg-yellow-500">
+                        <i data-lucide="star"></i>
+                    </div>
+                    <div class="stat-info">
+                        <p class="stat-label">Reseñas Solicitadas (Semana)</p>
+                        <p class="stat-value" id="reviewsRequestedWeek">0</p>
                     </div>
                 </div>
             </div>
