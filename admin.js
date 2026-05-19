@@ -365,14 +365,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 navigateToSection('dashboard');
                 showNotification('¡Bienvenido al sistema!', 'success');
                 return;
-            } else {
-                console.warn("Supabase Auth falló, intentando login local...");
             }
         }
 
-        // FALLBACK: Login local si Supabase no está configurado o el usuario es admin
+        // FALLBACK REFORZADO: Login local si falla Supabase o son las credenciales master
         if (user.toLowerCase() === AUTH_CONFIG.user && pass === AUTH_CONFIG.pass) {
+            console.log("✅ Acceso mediante credenciales maestras locales");
             sessionStorage.setItem('ecopark_authenticated', 'true');
+            
+            // Forzar ocultar pantalla de login
+            if (loginScreen) {
+                loginScreen.style.display = 'none';
+            }
             if (loginScreen) loginScreen.style.display = 'none';
             navigateToSection('dashboard');
             showNotification('¡Bienvenido (Modo Local)!', 'success');
@@ -1067,10 +1071,13 @@ document.addEventListener('DOMContentLoaded', () => {
         return `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
     };
 
-    const showToast = (message, type = 'success') => {
+const showToast = (message, type = 'success') => {
         // Usar el nuevo sistema de notificaciones mejorado
         showNotification(message, type, 3000);
     };
+
+// Safety export (por si otras partes llaman fuera del scope en runtime)
+window.showToast = showToast;
 
     // ==================== MEDIOS MANAGEMENT ====================
     const renderMedios = () => {
