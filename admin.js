@@ -3,6 +3,254 @@
    Sistema de Gestión de Citas con Google Calendar
    ======================================== */
 
+// ==================== UTILITY IMPROVEMENTS ====================
+/**
+ * VALIDACIÓN Y SANITIZACIÓN DE DATOS
+ * Funciones para prevenir errores y vulnerabilidades XSS
+ */
+
+// Debounce para filtros - evita renderizado excesivo
+const debounce = (func, delay = 300) => {
+    let timeoutId;
+    return (...args) => {
+        clearTimeout(timeoutId);
+        timeoutId = setTimeout(() => func(...args), delay);
+    };
+};
+
+// Sanitización: evita inyección de código
+const sanitizeInput = (str) => {
+    if (typeof str !== 'string') return '';
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+};
+
+// Validación de emails
+const isValidEmail = (email) => {
+    const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return regex.test(email);
+};
+
+// Validación de teléfono (flexible)
+const isValidPhone = (phone) => {
+    const regex = /^[\d\s\-\+\(\)]{7,20}$/;
+    return regex.test(phone);
+};
+
+// Validación de fecha
+const isValidDate = (dateStr) => {
+    const date = new Date(dateStr + 'T00:00:00');
+    return !isNaN(date.getTime());
+};
+
+// Validación de cita completa
+const validateCita = (cita) => {
+    const errors = [];
+    if (!cita.cliente || cita.cliente.trim().length < 2) errors.push('Nombre debe tener al menos 2 caracteres');
+    if (!cita.telefono || !isValidPhone(cita.telefono)) errors.push('Teléfono inválido');
+    if (!cita.fecha || !isValidDate(cita.fecha)) errors.push('Fecha inválida');
+    if (!cita.hora || !/^\d{2}:\d{2}$/.test(cita.hora)) errors.push('Hora debe ser HH:MM');
+    if (!cita.servicio || cita.servicio.trim().length < 2) errors.push('Plan/Servicio requerido');
+    if (!cita.personas || isNaN(parseInt(cita.personas)) || parseInt(cita.personas) < 1) errors.push('Personas debe ser mayor a 0');
+    return errors;
+};
+
+/**
+ * SISTEMA DE NOTIFICACIONES MEJORADO
+ * Toast con stack y auto-cierre
+ */
+const toastContainer = (() => {
+    let container = document.getElementById('toast-container');
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'toast-container';
+        container.style.cssText = 'position:fixed;top:20px;right:20px;z-index:9999;display:flex;flex-direction:column;gap:8px;';
+        document.body.appendChild(container);
+    }
+    return container;
+})();
+
+const showNotification = (message, type = 'success', duration = 3000) => {
+    const toast = document.createElement('div');
+    const bgColor = {
+        success: '#10b981',
+        error: '#ef4444',
+        warning: '#f59e0b',
+        info: '#3b82f6'
+    }[type] || '#10b981';
+    
+    toast.style.cssText = `
+        background:${bgColor};
+        color:white;
+        padding:12px 16px;
+        border-radius:6px;
+        font-size:14px;
+        box-shadow:0 4px 12px rgba(0,0,0,0.15);
+        animation:slideIn 0.3s ease-out;
+        max-width:320px;
+        word-wrap:break-word;
+    `;
+    toast.textContent = message;
+    toastContainer.appendChild(toast);
+    
+    const timeout = setTimeout(() => {
+        toast.style.animation = 'slideOut 0.3s ease-out forwards';
+        setTimeout(() => toast.remove(), 300);
+    }, duration);
+    
+    toast.addEventListener('click', () => {
+        clearTimeout(timeout);
+        toast.remove();
+    });
+    
+    return toast;
+};
+
+// CSS para animaciones de toast
+if (!document.getElementById('toast-styles')) {
+    const style = document.createElement('style');
+    style.id = 'toast-styles';
+    style.textContent = `
+        @keyframes slideIn {
+            from { transform: translateX(400px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        @keyframes slideOut {
+            from { transform: translateX(0); opacity: 1; }
+            to { transform: translateX(400px); opacity: 0; }
+        }
+    `;
+    document.head.appendChild(style);
+}
+
+/**
+ * SISTEMA DE PAGINACIÓN
+ * Para manejar tablas grandes
+ */
+const createPagination = (items, pageSize = 10) => {
+    const totalPages = Math.ceil(items.length / pageSize);
+    let currentPage = 1;
+    
+    return {
+        getPage: (page) => {
+            if (page < 1 || page > totalPages) return [];
+            const start = (page - 1) * pageSize;
+            return items.slice(start, start + pageSize);
+        },
+        setPage: (page) => {
+            if (page >= 1 && page <= totalPages) currentPage = page;
+            return currentPage;
+        },
+        getCurrentPage: () => currentPage,
+        getTotalPages: () => totalPages,
+        getTotalItems: () => items.length
+    };
+};
+
+/**
+ * SISTEMA DE BACKUP
+ * Guardar y restaurar datos
+ */
+const BackupManager = {
+    createBackup: () => {
+        const backup = {
+            citas: localStorage.getItem('ecopark_citas'),
+            medios: localStorage.getItem('ecopark_medios'),
+            banners: localStorage.getItem('ecopark_banners'),
+            reviews: localStorage.getItem('ecopark_reviews'),
+            config: localStorage.getItem('ecopark_google_config'),
+            maps: localStorage.getItem('ecopark_maps_config'),
+            webhook: localStorage.getItem('ecopark_webhook'),
+            cms: localStorage.getItem('ecopark_cms'),
+            timestamp: new Date().toISOString()
+        };
+        localStorage.setItem('ecopark_backup_' + Date.now(), JSON.stringify(backup));
+        return backup;
+    },
+    
+    restoreBackup: (backupKey) => {
+        const backup = localStorage.getItem(backupKey);
+        if (!backup) {
+            showNotification('Backup no encontrado', 'error');
+            return false;
+        }
+        const data = JSON.parse(backup);
+        if (data.citas) localStorage.setItem('ecopark_citas', data.citas);
+        if (data.medios) localStorage.setItem('ecopark_medios', data.medios);
+        if (data.banners) localStorage.setItem('ecopark_banners', data.banners);
+        if (data.reviews) localStorage.setItem('ecopark_reviews', data.reviews);
+        if (data.config) localStorage.setItem('ecopark_google_config', data.config);
+        if (data.maps) localStorage.setItem('ecopark_maps_config', data.maps);
+        if (data.webhook) localStorage.setItem('ecopark_webhook', data.webhook);
+        if (data.cms) localStorage.setItem('ecopark_cms', data.cms);
+        return true;
+    },
+    
+    listBackups: () => {
+        const backups = [];
+        for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            if (key.startsWith('ecopark_backup_')) {
+                const data = JSON.parse(localStorage.getItem(key));
+                backups.push({ key, timestamp: data.timestamp });
+            }
+        }
+        return backups.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+    },
+    
+    deleteBackup: (backupKey) => {
+        localStorage.removeItem(backupKey);
+        showNotification('Backup eliminado', 'success');
+    }
+};
+
+/**
+ * GESTOR DE CARGA
+ * Mostrar estado de carga en operaciones async
+ */
+const LoadingManager = {
+    show: (message = 'Cargando...') => {
+        if (document.getElementById('loading-overlay')) return;
+        const overlay = document.createElement('div');
+        overlay.id = 'loading-overlay';
+        overlay.style.cssText = `
+            position:fixed;top:0;left:0;right:0;bottom:0;
+            background:rgba(0,0,0,0.3);z-index:9998;
+            display:flex;align-items:center;justify-content:center;
+        `;
+        const spinner = document.createElement('div');
+        spinner.style.cssText = `
+            background:white;padding:24px;border-radius:8px;
+            text-align:center;box-shadow:0 10px 40px rgba(0,0,0,0.2);
+        `;
+        spinner.innerHTML = `
+            <div style="width:40px;height:40px;border:4px solid #e5e7eb;
+            border-top-color:#10b981;border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 12px;"></div>
+            <p style="margin:0;color:#6b7280;font-size:14px;">${message}</p>
+        `;
+        overlay.appendChild(spinner);
+        document.body.appendChild(overlay);
+        
+        if (!document.getElementById('spin-style')) {
+            const style = document.createElement('style');
+            style.id = 'spin-style';
+            style.textContent = '@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }';
+            document.head.appendChild(style);
+        }
+    },
+    
+    hide: () => {
+        const overlay = document.getElementById('loading-overlay');
+        if (overlay) {
+            overlay.style.animation = 'fadeOut 0.3s ease-out';
+            setTimeout(() => overlay.remove(), 300);
+        }
+    }
+};
+
+// ==================== FIN MEJORAS ====================
+
 document.addEventListener('DOMContentLoaded', () => {
     // ==================== AUTENTICACIÓN ====================
     // Credenciales por defecto
@@ -376,43 +624,55 @@ document.addEventListener('DOMContentLoaded', () => {
     citaForm?.addEventListener('submit', async (e) => {
         e.preventDefault();
         
-        const citaId = document.getElementById('citaId').value;
-        const citaData = {
-            id: citaId || Date.now().toString(),
-            cliente: document.getElementById('citaNombre').value,
-            telefono: document.getElementById('citaTelefono').value,
-            fecha: document.getElementById('citaFecha').value,
-            hora: document.getElementById('citaHora').value,
-            servicio: document.getElementById('citaServicio').value,
-            personas: document.getElementById('citaPersonas').value,
-            estado: document.getElementById('citaEstado').value,
-            notas: document.getElementById('citaNotas').value,
-            syncGoogle: document.getElementById('citaSyncGoogle').checked,
-            timestamp: Date.now()
-        };
+        try {
+            const citaId = document.getElementById('citaId').value;
+            const citaData = {
+                id: citaId || Date.now().toString(),
+                cliente: sanitizeInput(document.getElementById('citaNombre').value),
+                telefono: document.getElementById('citaTelefono').value,
+                fecha: document.getElementById('citaFecha').value,
+                hora: document.getElementById('citaHora').value,
+                servicio: sanitizeInput(document.getElementById('citaServicio').value),
+                personas: document.getElementById('citaPersonas').value,
+                estado: document.getElementById('citaEstado').value,
+                notas: sanitizeInput(document.getElementById('citaNotas').value),
+                syncGoogle: document.getElementById('citaSyncGoogle').checked,
+                timestamp: Date.now()
+            };
 
-        if (citaId) {
-            // Update existing
-            const index = citas.findIndex(c => c.id === citaId);
-            if (index !== -1) {
-                citas[index] = citaData;
+            // Validar datos
+            const errors = validateCita(citaData);
+            if (errors.length > 0) {
+                showToast('Errores:\n' + errors.join('\n'), 'error');
+                return;
             }
-        } else {
-            // Create new
-            citas.push(citaData);
-        }
 
-        saveCitas();
-        
-        // Sync with Google Calendar if enabled
-        if (citaData.syncGoogle && googleConfig.apiKey) {
-            await syncToGoogleCalendar(citaData);
-        }
+            if (citaId) {
+                // Update existing
+                const index = citas.findIndex(c => c.id === citaId);
+                if (index !== -1) {
+                    citas[index] = { ...citas[index], ...citaData };
+                }
+            } else {
+                // Create new
+                citas.push(citaData);
+            }
 
-        citaModal.classList.remove('active');
-        renderCitasTable();
-        updateDashboard();
-        showToast(citaId ? 'Cita actualizada' : 'Cita creada', 'success');
+            saveCitas();
+            
+            // Sync with Google Calendar if enabled
+            if (citaData.syncGoogle && googleConfig.apiKey) {
+                await syncToGoogleCalendar(citaData);
+            }
+
+            citaModal.classList.remove('active');
+            renderCitasTable();
+            updateDashboard();
+            showToast(citaId ? 'Cita actualizada ✓' : 'Cita creada ✓', 'success');
+        } catch (error) {
+            console.error('Error al guardar cita:', error);
+            showToast('Error al guardar: ' + error.message, 'error');
+        }
     });
 
     // ==================== GOOGLE CALENDAR INTEGRATION ====================
@@ -420,6 +680,11 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!googleConfig.apiKey || !cita.syncGoogle) return;
 
         try {
+            // Validar que la cita tenga datos necesarios
+            if (!cita.fecha || !cita.hora) {
+                throw new Error('Fecha y hora requeridas para sincronizar');
+            }
+
             // This is a placeholder for Google Calendar API integration
             // In production, you would use the Google Calendar API
             console.log('Syncing to Google Calendar:', cita);
@@ -447,10 +712,10 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             */
             
-            showToast('Sincronizado con Google Calendar', 'success');
+            showToast('Sincronizado con Google Calendar ✓', 'success');
         } catch (error) {
             console.error('Error syncing to Google Calendar:', error);
-            showToast('Error al sincronizar con Google Calendar', 'error');
+            showToast('Error al sincronizar: ' + error.message, 'error');
         }
     };
 
@@ -475,18 +740,42 @@ document.addEventListener('DOMContentLoaded', () => {
     const testConnectionBtn = document.getElementById('testConnectionBtn');
 
     saveConfigBtn?.addEventListener('click', () => {
-        saveGoogleConfig();
-        showToast('Configuración guardada', 'success');
+        try {
+            const apiKey = document.getElementById('googleApiKey')?.value?.trim();
+            const clientId = document.getElementById('googleClientId')?.value?.trim();
+            
+            if (!apiKey) {
+                showToast('API Key es requerida', 'error');
+                return;
+            }
+            
+            if (apiKey.length < 10) {
+                showToast('API Key parece inválida (muy corta)', 'error');
+                return;
+            }
+            
+            saveGoogleConfig();
+            showToast('Configuración guardada ✓', 'success');
+        } catch (error) {
+            console.error('Error al guardar configuración:', error);
+            showToast('Error: ' + error.message, 'error');
+        }
     });
 
     testConnectionBtn?.addEventListener('click', () => {
-        if (!googleConfig.apiKey) {
-            showToast('Ingresa una API Key primero', 'error');
-            return;
+        try {
+            const apiKey = document.getElementById('googleApiKey')?.value?.trim();
+            if (!apiKey) {
+                showToast('Ingresa una API Key primero', 'error');
+                return;
+            }
+            
+            // Simulado - en producción hacer llamada real a Google
+            showToast('✓ Conexión verificada (simulada)', 'success');
+        } catch (error) {
+            console.error('Error en test de conexión:', error);
+            showToast('Error en la prueba: ' + error.message, 'error');
         }
-        
-        // Placeholder for connection test
-        showToast('Conexión exitosa (simulada)', 'success');
     });
 
     // ==================== CALENDAR VIEW ====================
@@ -548,9 +837,36 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // ==================== FILTERS ====================
-    document.getElementById('filtroFecha')?.addEventListener('change', renderCitasTable);
-    document.getElementById('filtroEstado')?.addEventListener('change', renderCitasTable);
-    document.getElementById('filtroBusqueda')?.addEventListener('input', renderCitasTable);
+    // Con debounce para búsqueda - evita renderizado excesivo
+    document.getElementById('filtroFecha')?.addEventListener('change', () => {
+        try {
+            renderCitasTable();
+        } catch (error) {
+            console.error('Error en filtro de fecha:', error);
+            showToast('Error al filtrar por fecha', 'error');
+        }
+    });
+    
+    document.getElementById('filtroEstado')?.addEventListener('change', () => {
+        try {
+            renderCitasTable();
+        } catch (error) {
+            console.error('Error en filtro de estado:', error);
+            showToast('Error al filtrar por estado', 'error');
+        }
+    });
+    
+    // Debounce en búsqueda para mejor performance
+    const debouncedSearch = debounce(() => {
+        try {
+            renderCitasTable();
+        } catch (error) {
+            console.error('Error en búsqueda:', error);
+            showToast('Error en la búsqueda', 'error');
+        }
+    }, 400);
+    
+    document.getElementById('filtroBusqueda')?.addEventListener('input', debouncedSearch);
 
     // ==================== GLOBAL FUNCTIONS ====================
     window.editCita = (id) => {
@@ -573,12 +889,23 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     window.deleteCita = (id) => {
-        if (confirm('¿Estás seguro de eliminar esta cita?')) {
-            citas = citas.filter(c => c.id !== id);
-            saveCitas();
-            renderCitasTable();
-            updateDashboard();
-            showToast('Cita eliminada', 'success');
+        try {
+            const cita = citas.find(c => c.id === id);
+            if (!cita) {
+                showToast('Cita no encontrada', 'error');
+                return;
+            }
+            
+            if (confirm(`¿Estás SEGURO de eliminar la cita de ${cita.cliente}?\n\nEsta acción NO se puede deshacer.`)) {
+                citas = citas.filter(c => c.id !== id);
+                saveCitas();
+                renderCitasTable();
+                updateDashboard();
+                showToast('Cita eliminada ✓', 'success');
+            }
+        } catch (error) {
+            console.error('Error al eliminar cita:', error);
+            showToast('Error al eliminar: ' + error.message, 'error');
         }
     };
 
@@ -619,14 +946,8 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const showToast = (message, type = 'success') => {
-        const toast = document.createElement('div');
-        toast.className = `toast ${type}`;
-        toast.textContent = message;
-        document.body.appendChild(toast);
-        
-        setTimeout(() => {
-            toast.remove();
-        }, 3000);
+        // Usar el nuevo sistema de notificaciones mejorado
+        showNotification(message, type, 3000);
     };
 
     // ==================== MEDIOS MANAGEMENT ====================
@@ -741,22 +1062,40 @@ document.addEventListener('DOMContentLoaded', () => {
     medioForm?.addEventListener('submit', (e) => {
         e.preventDefault();
         
-        const medioData = {
-            id: Date.now().toString(),
-            tipo: document.getElementById('medioTipo').value,
-            url: document.getElementById('medioUrl').value,
-            titulo: document.getElementById('medioTitulo').value,
-            categoria: document.getElementById('medioCategoria').value,
-            descripcion: document.getElementById('medioDescripcion').value,
-            destacado: document.getElementById('medioDestacado').checked,
-            timestamp: Date.now()
-        };
+        try {
+            const url = document.getElementById('medioUrl')?.value?.trim();
+            const titulo = sanitizeInput(document.getElementById('medioTitulo')?.value);
+            
+            if (!url) {
+                showToast('URL del medio es requerida', 'error');
+                return;
+            }
+            
+            if (!titulo) {
+                showToast('Título del medio es requerido', 'error');
+                return;
+            }
+            
+            const medioData = {
+                id: Date.now().toString(),
+                tipo: document.getElementById('medioTipo')?.value || 'foto',
+                url: url,
+                titulo: titulo,
+                categoria: document.getElementById('medioCategoria')?.value || 'general',
+                descripcion: sanitizeInput(document.getElementById('medioDescripcion')?.value || ''),
+                destacado: document.getElementById('medioDestacado')?.checked || false,
+                timestamp: Date.now()
+            };
 
-        medios.push(medioData);
-        saveMedios();
-        medioModal.classList.remove('active');
-        renderMedios();
-        showToast('Medio agregado', 'success');
+            medios.push(medioData);
+            saveMedios();
+            medioModal.classList.remove('active');
+            renderMedios();
+            showToast('Medio agregado ✓', 'success');
+        } catch (error) {
+            console.error('Error al agregar medio:', error);
+            showToast('Error: ' + error.message, 'error');
+        }
     });
 
     window.editMedio = (id) => {
@@ -854,39 +1193,46 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     syncReviewsBtn?.addEventListener('click', async () => {
-        if (!mapsConfig.placeId || !mapsConfig.apiKey) {
-            showToast('Configura primero el Place ID y API Key', 'error');
-            return;
-        }
-
-        showToast('Sincronizando reseñas...', 'success');
-
         try {
+            if (!mapsConfig.placeId || !mapsConfig.apiKey) {
+                showToast('Configura primero el Place ID y API Key de Maps', 'error');
+                return;
+            }
+
+            LoadingManager.show('Sincronizando reseñas de Google Maps...');
+            
             // Google Maps Places API call
             const response = await fetch(
                 `https://maps.googleapis.com/maps/api/place/details/json?place_id=${mapsConfig.placeId}&fields=reviews,rating,review_count&key=${mapsConfig.apiKey}`
             );
+            
+            if (!response.ok) {
+                throw new Error(`Error HTTP: ${response.status}`);
+            }
             
             const data = await response.json();
             
             if (data.result && data.result.reviews) {
                 reviews = data.result.reviews.map(review => ({
                     id: review.time?.toString() || Date.now().toString(),
-                    authorName: review.author_name || 'Anónimo',
+                    authorName: sanitizeInput(review.author_name || 'Anónimo'),
                     rating: review.rating || 0,
-                    text: review.text || '',
+                    text: sanitizeInput(review.text || ''),
                     timestamp: review.time * 1000 || Date.now()
                 }));
                 
                 saveReviews();
                 renderReviews();
-                showToast(`${reviews.length} reseñas sincronizadas`, 'success');
+                LoadingManager.hide();
+                showToast(`✓ ${reviews.length} reseñas sincronizadas`, 'success');
             } else {
-                showToast('No se encontraron reseñas', 'error');
+                LoadingManager.hide();
+                showToast('No se encontraron reseñas', 'warning');
             }
         } catch (error) {
+            LoadingManager.hide();
             console.error('Error syncing reviews:', error);
-            showToast('Error al sincronizar reseñas', 'error');
+            showToast('Error al sincronizar: ' + error.message, 'error');
         }
     });
 
@@ -1610,6 +1956,87 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
+
+    // ==================== ADMIN TOOLS ====================
+    // Crear botón de herramientas admin
+    window.showAdminTools = () => {
+        const modal = document.createElement('div');
+        modal.className = 'modal-overlay';
+        modal.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:3000;display:flex;align-items:center;justify-content:center;';
+        
+        const content = document.createElement('div');
+        content.style.cssText = 'background:white;border-radius:12px;padding:24px;max-width:500px;max-height:80vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,0.3);';
+        
+        const backups = BackupManager.listBackups();
+        const backupsList = backups.map(b => `
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:8px;background:#f3f4f6;border-radius:6px;margin-bottom:8px;">
+                <span style="font-size:12px;">${new Date(b.timestamp).toLocaleString('es-CO')}</span>
+                <div style="display:flex;gap:8px;">
+                    <button onclick="BackupManager.restoreBackup('${b.key}');location.reload();" style="padding:4px 12px;background:#10b981;color:white;border:none;border-radius:4px;cursor:pointer;font-size:11px;">Restaurar</button>
+                    <button onclick="BackupManager.deleteBackup('${b.key}');window.showAdminTools();" style="padding:4px 12px;background:#ef4444;color:white;border:none;border-radius:4px;cursor:pointer;font-size:11px;">Borrar</button>
+                </div>
+            </div>
+        `).join('');
+        
+        content.innerHTML = `
+            <h2 style="margin-top:0;color:#1f2937;border-bottom:2px solid #10b981;padding-bottom:12px;">🔧 Herramientas Admin</h2>
+            
+            <div style="margin-top:16px;">
+                <h3 style="color:#374151;font-size:14px;margin-bottom:8px;">💾 Copias de Seguridad</h3>
+                <button onclick="BackupManager.createBackup();showNotification('Backup creado ✓','success');window.showAdminTools();" style="width:100%;padding:10px;background:#10b981;color:white;border:none;border-radius:6px;cursor:pointer;margin-bottom:12px;font-weight:600;">
+                    Crear Backup Ahora
+                </button>
+                <div style="max-height:200px;overflow-y:auto;">
+                    ${backupsList || '<p style="color:#6b7280;font-size:12px;">No hay backups guardados</p>'}
+                </div>
+            </div>
+            
+            <div style="margin-top:20px;">
+                <h3 style="color:#374151;font-size:14px;margin-bottom:8px;">📊 Estadísticas</h3>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;">
+                    <div style="background:#f0fdf4;padding:10px;border-radius:6px;border-left:4px solid #10b981;">
+                        <div style="font-size:12px;color:#6b7280;">Total de Citas</div>
+                        <div style="font-size:20px;font-weight:bold;color:#10b981;">${citas.length}</div>
+                    </div>
+                    <div style="background:#fef3c7;padding:10px;border-radius:6px;border-left:4px solid #f59e0b;">
+                        <div style="font-size:12px;color:#6b7280;">Medios</div>
+                        <div style="font-size:20px;font-weight:bold;color:#f59e0b;">${medios.length}</div>
+                    </div>
+                    <div style="background:#ede9fe;padding:10px;border-radius:6px;border-left:4px solid #8b5cf6;">
+                        <div style="font-size:12px;color:#6b7280;">Banners</div>
+                        <div style="font-size:20px;font-weight:bold;color:#8b5cf6;">${banners.length}</div>
+                    </div>
+                    <div style="background:#fecaca;padding:10px;border-radius:6px;border-left:4px solid #ef4444;">
+                        <div style="font-size:12px;color:#6b7280;">Reseñas</div>
+                        <div style="font-size:20px;font-weight:bold;color:#ef4444;">${reviews.length}</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div style="margin-top:20px;">
+                <h3 style="color:#374151;font-size:14px;margin-bottom:8px;">⚡ Utilidades</h3>
+                <button onclick="exportarCSV();window.showAdminTools();" style="width:100%;padding:10px;background:#3b82f6;color:white;border:none;border-radius:6px;cursor:pointer;margin-bottom:8px;font-weight:600;">
+                    📥 Descargar Citas en CSV
+                </button>
+                <button onclick="localStorage.clear();showNotification('Datos eliminados','warning');setTimeout(()=>location.reload(),1000);" style="width:100%;padding:10px;background:#ef4444;color:white;border:none;border-radius:6px;cursor:pointer;font-weight:600;opacity:0.7;font-size:12px;">
+                    ⚠️ Limpiar TODOS los datos (irreversible)
+                </button>
+            </div>
+            
+            <button onclick="this.closest('.modal-overlay').remove();" style="width:100%;margin-top:16px;padding:10px;background:#6b7280;color:white;border:none;border-radius:6px;cursor:pointer;font-weight:600;">
+                Cerrar
+            </button>
+        `;
+        
+        modal.appendChild(content);
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) modal.remove();
+        });
+        document.body.appendChild(modal);
+    };
+    
+    // Exponer herramientas
+    window.BackupManager = BackupManager;
 
     // ==================== INITIALIZATION ====================
     // Cargamos configuraciones primero
