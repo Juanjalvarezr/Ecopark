@@ -3,16 +3,74 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ecopark Mundo de Colores - Microaventura Emocional</title>
+    <title>Ecopark Mundo de Colores | Pasadía, Restaurante y Eventos en Villavicencio, Meta</title>
+    <meta name="description" content="Ecopark Mundo de Colores SAS — Ecoparque con resbalador extremo, piscinas, granja interactiva y restaurante de carne llanera en Villavicencio, Meta. Reserva tu pasadía familiar o celebra tu cumpleaños.">
+    <meta name="keywords" content="ecopark, parque villavicencio, pasadía meta, restaurante villavicencio, cumpleaños villavicencio, resbalador extremo, piscinas, granja interactiva, carne llanera">
+    <meta name="author" content="Ecopark Mundo de Colores SAS">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://ecoparkcolores.com/">
+    <meta name="theme-color" content="#2E7D32">
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Ecopark Mundo de Colores — Pasadía y Restaurante en Villavicencio">
+    <meta property="og:description" content="Resbalador extremo, piscinas, granja y la mejor carne llanera. Tu aventura familiar a solo 3 horas de Bogotá.">
+    <meta property="og:url" content="https://ecoparkcolores.com/">
+    <meta property="og:site_name" content="Ecopark Mundo de Colores">
+    <meta property="og:locale" content="es_CO">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Ecopark Mundo de Colores — Villavicencio, Meta">
+    <meta name="twitter:description" content="Pasadía familiar, cumpleaños y restaurante llanero. ¡Reserva ahora!">
+
+    <!-- Schema JSON-LD -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "TouristAttraction",
+      "name": "Ecopark Mundo de Colores",
+      "description": "Ecoparque con resbalador extremo, piscinas, granja interactiva y restaurante de carne llanera en Villavicencio, Meta, Colombia.",
+      "url": "https://ecoparkcolores.com",
+      "telephone": "+573102200917",
+      "email": "info@ecoparkcolores.com",
+      "address": {
+        "@type": "PostalAddress",
+        "streetAddress": "Vda. La Argentina, Santa María La Baja",
+        "addressLocality": "Villavicencio",
+        "addressRegion": "Meta",
+        "addressCountry": "CO"
+      },
+      "geo": {
+        "@type": "GeoCoordinates",
+        "latitude": 4.1420,
+        "longitude": -73.6266
+      },
+      "openingHours": "Sa-Su 09:00-17:00",
+      "priceRange": "$$",
+      "sameAs": [
+        "https://instagram.com/ecoparkcolores",
+        "https://facebook.com/ecoparkcolores",
+        "https://tiktok.com/@ecoparkcolores"
+      ],
+      "identifier": {
+        "@type": "PropertyValue",
+        "name": "NIT",
+        "value": "901815124-7"
+      }
+    }
+    </script>
+
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
     <script src="https://unpkg.com/lucide@latest"></script>
-    <meta name="description" content="Vive una microaventura sensorial a solo 3 horas de Bogotá. Descubre cómo los colores transforman tu estado de ánimo.">
 </head>
 <body class="bg-white">
-    <div class="cursor-aura" id="cursorAura"></div>
-    <div class="cursor-aura" id="cursorAura"></div>
+    <div class="cursor-aura hidden md:block" id="cursorAura"></div>
+
+    <!-- Barra de progreso dinámica -->
+    <div id="scrollProgress" class="fixed top-0 left-0 h-1 z-[1001] transition-all duration-500"></div>
 
     <div class="music-control" id="musicToggle">
         <div class="music-bars">
@@ -21,6 +79,9 @@
         <i data-lucide="music" class="w-6 h-6"></i>
         <audio id="bgMusic" loop>
             <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" type="audio/mpeg">
+        </audio>
+        <audio id="modalSound" preload="auto">
+            <source src="https://assets.mixkit.co/active_storage/sfx/2861/2861-preview.mp3" type="audio/mpeg">
         </audio>
     </div>
 
@@ -33,15 +94,16 @@
     <!-- NAVBAR -->
     <nav class="navbar w-full">
         <div class="container flex justify-between items-center px-4">
-            <a href="#" class="text-2xl font-black text-white logo-text transition-colors duration-300">🌈 Ecopark</a>
+            <a href="#" class="text-2xl font-black text-white logo-text transition-colors duration-300" aria-label="Ecopark Inicio">🌈 Ecopark</a>
             <div class="hidden md:flex gap-8 items-center text-white nav-links">
                 <a href="#mision" class="hover:text-yellow-400 transition-colors">Misión</a>
                 <a href="#servicios" class="hover:text-yellow-400 transition-colors">Servicios</a>
                 <a href="#gastronomia" class="hover:text-yellow-400 transition-colors">Restaurante</a>
-                <a href="#contacto" class="btn btn-primary px-6 py-2">Reservar</a>
+                <a href="#eventos" class="hover:text-yellow-400 transition-colors">Eventos</a>
+                <a href="#reservar" class="btn btn-primary px-6 py-2">Reservar</a>
             </div>
-            <button class="md:hidden text-white">
-                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
+            <button class="md:hidden text-white p-2 focus:outline-none" aria-label="Abrir menú de navegación">
+                <i data-lucide="menu" class="w-8 h-8"></i>
             </button>
         </div>
     </nav>
@@ -49,9 +111,18 @@
     <!-- HERO SECTION -->
     <section class="hero relative">
         <div class="hero-clouds">
-            <div class="cloud cloud-1"></div>
-            <div class="cloud cloud-2"></div>
-            <div class="cloud cloud-3"></div>
+            <!-- Nube 1 -->
+            <svg class="cloud cloud-1" viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg">
+                <path d="M17.5,19c3.037,0,5.5-2.463,5.5-5.5c0-2.584-1.782-4.752-4.172-5.337C17.947,4.07,14.54,1,10.5,1 C7.33,1,4.604,2.83,3.313,5.495C1.439,6.13,0,7.9,0,10c0,2.761,2.239,5,5,5c0.264,0,0.52-0.02,0.768-0.061 C7.025,17.348,9.575,19,12.5,19c1.071,0,2.074-0.221,2.984-0.613C16.14,18.784,16.801,19,17.5,19z"/>
+            </svg>
+            <!-- Nube 2 -->
+            <svg class="cloud cloud-2" viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg">
+                <path d="M19.5,15c2.485,0,4.5-2.015,4.5-4.5c0-2.016-1.328-3.72-3.155-4.29C20.147,3.136,17.447,1,14.25,1 c-2.99,0-5.548,1.996-6.418,4.729C7.031,5.253,6.046,5,5,5C2.239,5,0,7.239,0,10c0,2.761,2.239,5,5,5h14.5z"/>
+            </svg>
+            <!-- Nube 3 -->
+            <svg class="cloud cloud-3" viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg">
+                <path d="M17.5,19c3.037,0,5.5-2.463,5.5-5.5c0-2.584-1.782-4.752-4.172-5.337C17.947,4.07,14.54,1,10.5,1 C7.33,1,4.604,2.83,3.313,5.495C1.439,6.13,0,7.9,0,10c0,2.761,2.239,5,5,5c0.264,0,0.52-0.02,0.768-0.061 C7.025,17.348,9.575,19,12.5,19c1.071,0,2.074-0.221,2.984-0.613C16.14,18.784,16.801,19,17.5,19z"/>
+            </svg>
         </div>
         <div class="hero-content px-4">
             <h1 class="hero-title reveal">Donde la <span class="text-green-400">Naturaleza</span> cobra <span class="text-yellow-400">Vida</span></h1>
@@ -60,16 +131,16 @@
             </p>
             <div class="flex flex-col sm:flex-row gap-4 justify-center reveal" style="transition-delay: 0.4s">
                 <a href="#servicios" class="btn btn-primary px-10 py-4 text-lg">Explorar Servicios</a>
-                <a href="https://wa.me/573102200917" class="btn border-2 border-white text-white hover:bg-white hover:text-green-900 px-10 py-4 text-lg">Hablemos por WhatsApp</a>
+                <a href="https://wa.me/573102200917" class="btn border-2 border-white text-white hover:bg-white hover:text-green-900 px-10 py-4 text-lg transition-all duration-300" rel="noopener noreferrer">Hablemos por WhatsApp</a>
             </div>
         </div>
         <div class="absolute bottom-10 left-1/2 transform -translate-x-1/2 animate-bounce text-white opacity-50">
-            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path></svg>
+            <i data-lucide="chevron-down"></i>
         </div>
     </section>
 
     <!-- MISSION & PURPOSE -->
-    <section id="mision" class="section-padding mission-section">
+    <section id="mision" class="section-padding mission-section reveal" data-section-color="#2E7D32">
         <div class="container">
             <div class="mission-card glass-card p-12 reveal">
                 <div>
@@ -107,9 +178,9 @@
                 <p class="text-xl text-gray-500">Haz clic en cada tarjeta para sumergirte en la aventura</p>
             </div>
 
-            <div class="services-grid">
+            <div class="services-grid px-2">
                 <!-- Resbalador -->
-                <div class="service-card-3d reveal" style="transition-delay: 0.1s"
+                <div class="service-card-3d reveal" style="transition-delay: 0.1s" data-section-color="#D32F2F"
                      data-title="Resbalador de Colores" 
                      data-color="#ef4444"
                      data-icon="zap"
@@ -228,7 +299,7 @@
 
     <!-- MODAL DETALLE -->
     <div id="serviceModal" class="modal">
-        <div class="modal-overlay"></div>
+        <div class="modal-overlay" onclick="closeModal()"></div>
         <div class="modal-container glass-card">
             <button class="modal-close"><i data-lucide="x"></i></button>
             <div class="modal-body">
@@ -313,6 +384,153 @@
                         <img src="https://images.unsplash.com/photo-1544025162-d76694265947?w=400&h=500&fit=crop" alt="Corte de Carne" class="rounded-2xl shadow-xl mt-8">
                         <img src="https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?w=400&h=500&fit=crop" alt="Salmón" class="rounded-2xl shadow-xl">
                     </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- EVENTOS Y CUMPLEAÑOS -->
+    <section id="eventos" class="section-padding bg-white relative overflow-hidden">
+        <div class="container">
+            <div class="text-center mb-16 reveal">
+                <span class="tag tag-red mb-4">🎂 Celebraciones Especiales</span>
+                <h2 class="text-5xl font-black text-green-900 mb-4">Celebra Aquí tu Cumpleaños</h2>
+                <p class="text-xl text-gray-500 max-w-2xl mx-auto">Haz de este día el más memorable. Nuestro equipo organiza todo para que solo te preocupes de disfrutar.</p>
+            </div>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div class="evento-card reveal" style="transition-delay:0.1s">
+                    <div class="evento-icon">🎈</div>
+                    <h3 class="text-2xl font-black text-green-900 mb-3">Decoración Temática</h3>
+                    <p class="text-gray-600">Globos, tela, mesa de dulces y ambientación personalizada en nuestra zona de eventos con vista al parque.</p>
+                </div>
+                <div class="evento-card reveal" style="transition-delay:0.2s">
+                    <div class="evento-icon">🎂</div>
+                    <h3 class="text-2xl font-black text-green-900 mb-3">Pastel + Sorpresa</h3>
+                    <p class="text-gray-600">Incluye torta personalizada, animación, micrófono para el cumpleañero y el momento de las velas frente a todos.</p>
+                </div>
+                <div class="evento-card reveal" style="transition-delay:0.3s">
+                    <div class="evento-icon">🌊</div>
+                    <h3 class="text-2xl font-black text-green-900 mb-3">Acceso Total al Parque</h3>
+                    <p class="text-gray-600">Todos los invitados disfrutan resbaladores, piscinas y granja. El paquete cumpleaños incluye almuerzo a la carta.</p>
+                </div>
+            </div>
+            <div class="text-center mt-16 reveal">
+                <a href="#reservar" class="btn btn-primary text-xl px-12 py-5 shadow-2xl" style="background: linear-gradient(135deg, #065f46, #10b981)">
+                    🎉 Reservar mi Cumpleaños
+                </a>
+                <p class="text-sm text-gray-400 mt-4">Cupos limitados por fin de semana · Agenda con mínimo 1 semana de anticipación</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- FORMULARIO DE RESERVAS -->
+    <section id="reservar" class="section-padding reserva-section">
+        <div class="container">
+            <div class="text-center mb-16 reveal">
+                <span class="tag" style="background:#fbbf24;color:#065f46">📅 Reservas Online</span>
+                <h2 class="text-5xl font-black text-white mb-4">Asegura tu Lugar</h2>
+                <p class="text-xl" style="color:rgba(255,255,255,0.8)">Completa el formulario y nuestro equipo confirma tu reserva en menos de 24 horas.</p>
+            </div>
+            <div class="reserva-wrapper reveal">
+                <!-- Form -->
+                <form id="reservaForm" class="reserva-form" novalidate>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="res_nombre">Nombre Completo *</label>
+                            <input type="text" id="res_nombre" name="nombre" placeholder="Tu nombre completo" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="res_whatsapp">WhatsApp *</label>
+                            <div class="phone-input">
+                                <span class="country-code">🇨🇴 +57</span>
+                                <input type="tel" id="res_whatsapp" name="whatsapp" placeholder="310 220 0917" required maxlength="10">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="res_correo">Correo Electrónico *</label>
+                            <input type="email" id="res_correo" name="correo" placeholder="tu@correo.com" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="res_fecha">Fecha de Visita *</label>
+                            <input type="date" id="res_fecha" name="fecha" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="res_adultos">N.° de Adultos *</label>
+                            <div class="counter-input">
+                                <button type="button" class="counter-btn" data-target="res_adultos" data-action="-">−</button>
+                                <input type="number" id="res_adultos" name="adultos" value="1" min="1" max="50" readonly>
+                                <button type="button" class="counter-btn" data-target="res_adultos" data-action="+">+</button>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="res_ninos">N.° de Niños</label>
+                            <div class="counter-input">
+                                <button type="button" class="counter-btn" data-target="res_ninos" data-action="-">−</button>
+                                <input type="number" id="res_ninos" name="ninos" value="0" min="0" max="50" readonly>
+                                <button type="button" class="counter-btn" data-target="res_ninos" data-action="+">+</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Tipo de Plan *</label>
+                        <div class="plan-selector" id="planSelector">
+                            <label class="plan-option">
+                                <input type="radio" name="plan" value="Pasadía Familiar" required>
+                                <span class="plan-card">
+                                    <span class="plan-icon">🌊</span>
+                                    <span class="plan-name">Pasadía Familiar</span>
+                                    <span class="plan-desc">Parque completo</span>
+                                </span>
+                            </label>
+                            <label class="plan-option">
+                                <input type="radio" name="plan" value="Almuerzo a la Carta">
+                                <span class="plan-card">
+                                    <span class="plan-icon">🍽️</span>
+                                    <span class="plan-name">Almuerzo</span>
+                                    <span class="plan-desc">Restaurante a la carta</span>
+                                </span>
+                            </label>
+                            <label class="plan-option">
+                                <input type="radio" name="plan" value="Celebración de Cumpleaños">
+                                <span class="plan-card">
+                                    <span class="plan-icon">🎂</span>
+                                    <span class="plan-name">Cumpleaños</span>
+                                    <span class="plan-desc">Paquete celebración</span>
+                                </span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="res_notas">Información Adicional</label>
+                        <textarea id="res_notas" name="notas" rows="3" placeholder="Alergias, necesidades especiales, motivo del evento..."></textarea>
+                    </div>
+                    <div class="form-check">
+                        <input type="checkbox" id="res_habeas" name="habeas" required>
+                        <label for="res_habeas">
+                            Acepto el <button type="button" class="link-legal" onclick="abrirModalLegal('habeas')">Tratamiento de Datos Personales</button> conforme a la Ley 1581 de 2012 (Habeas Data) *
+                        </label>
+                    </div>
+                    <button type="submit" class="btn-reserva" id="btnReservar">
+                        <span id="btnReservarText">📅 Enviar Solicitud de Reserva</span>
+                    </button>
+                </form>
+
+                <!-- Confirmación -->
+                <div id="reservaConfirmacion" class="reserva-confirmacion" style="display:none">
+                    <div class="confirm-icon">✅</div>
+                    <h3>¡Solicitud Enviada!</h3>
+                    <p id="confirmMsg">Tu solicitud llegó a Ecopark por WhatsApp. Pronto te confirmaremos la disponibilidad. ¡Te esperamos! 🌈</p>
+                    <div class="confirm-detalles" id="confirmDetalles"></div>
+                    <a id="confirmWA" href="#" target="_blank" class="btn btn-whatsapp mt-6">
+                        💬 Escribir también por WhatsApp
+                    </a>
+                    <button onclick="document.getElementById('reservaConfirmacion').style.display='none'; document.getElementById('reservaForm').style.display='block'" class="btn btn-outline-green mt-4">
+                        Hacer otra reserva
+                    </button>
                 </div>
             </div>
         </div>
@@ -494,61 +712,138 @@
                         Estamos ubicados en el corazón del Meta, Villavicencio. Un viaje corto para una aventura inolvidable. ¡Te esperamos para llenar tu día de colores!
                     </p>
                     <div class="flex flex-wrap gap-4">
-                        <a href="https://maps.app.goo.gl/YourGoogleMapsLink" target="_blank" class="btn bg-white text-black hover:bg-gray-200 flex items-center gap-2">
+                        <a href="https://maps.app.goo.gl/Ks4tDmW3pYqKLKVV7" target="_blank" rel="noopener noreferrer" class="btn bg-white text-black hover:bg-gray-200 flex items-center gap-2">
                             <i data-lucide="map-pin"></i> Google Maps
                         </a>
-                        <a href="https://ul.waze.com/ul?ll=4.1420,-73.6266&navigate=yes" target="_blank" class="btn bg-[#33ccff] text-white hover:bg-[#2bb8e6] flex items-center gap-2 border-none">
+                        <a href="https://ul.waze.com/ul?ll=4.1420,-73.6266&navigate=yes" target="_blank" rel="noopener noreferrer" class="btn bg-[#33ccff] text-white hover:bg-[#2bb8e6] flex items-center gap-2 border-none">
                             <i data-lucide="navigation"></i> Abrir en Waze
                         </a>
                     </div>
                 </div>
-                <div class="reveal rounded-3xl overflow-hidden shadow-2xl border-4 border-white/10 h-[400px]" style="transition-delay: 0.2s">
-                    <iframe 
-                        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m12!1m3!1d127321.432658!2d-73.62!3d4.15!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x8e3e2ddfdfdc!2sVillavicencio%2C%20Meta!5e0!3m2!1ses!2sco!4v1715694200000!5m2!1ses!2sco" 
-                        width="100%" height="100%" style="border:0; filter: grayscale(1) invert(0.9) contrast(1.2);" allowfullscreen="" loading="lazy">
+                <div class="reveal rounded-3xl overflow-hidden shadow-2xl border-4 border-white/10 h-[300px] md:h-[400px] relative bg-gray-800" style="transition-delay: 0.2s">
+                    <!-- Placeholder de carga -->
+                    <div class="absolute inset-0 flex items-center justify-center map-loader">
+                        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-white"></div>
+                    </div>
+                    <iframe id="googleMapIframe"
+                        data-src="https://maps.google.com/maps?q=santa+maria+la+baja,+Vda.+La+Argentina,+Villavicencio,+Meta,+Colombia&output=embed&hl=es" 
+                        width="100%" height="100%" style="border:0; opacity: 0; transition: opacity 0.5s ease;" allowfullscreen="">
                     </iframe>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- FOOTER -->
-    <footer class="bg-gray-900 text-gray-400 py-16">
+    <!-- FOOTER INSTITUCIONAL -->
+    <footer class="footer-institucional">
         <div class="container px-4">
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
-                <div class="col-span-1 md:col-span-2">
-                    <h3 class="text-3xl font-black text-white mb-6">🌈 Ecopark</h3>
-                    <p class="mb-6 max-w-sm">Mundo de Colores SAS. Tu refugio emocional en el corazón de los Llanos Orientales. Donde la naturaleza y la alegría se encuentran.</p>
-                    <div class="flex gap-4">
-                        <a href="#" class="w-10 h-10 bg-gray-800 rounded-lg flex items-center justify-center hover:bg-green-600 transition-colors">IG</a>
-                        <a href="#" class="w-10 h-10 bg-gray-800 rounded-lg flex items-center justify-center hover:bg-green-600 transition-colors">FB</a>
-                        <a href="#" class="w-10 h-10 bg-gray-800 rounded-lg flex items-center justify-center hover:bg-green-600 transition-colors">TK</a>
+            <div class="footer-grid">
+                <!-- Marca -->
+                <div class="footer-brand">
+                    <h3 class="footer-logo">🌈 Ecopark</h3>
+                    <p id="footer_descripcion" class="footer-desc">Mundo de Colores SAS. Tu refugio emocional en el corazón de los Llanos Orientales. Donde la naturaleza y la alegría se encuentran.</p>
+                    <div class="social-links">
+                        <a href="https://instagram.com/ecoparkcolores" target="_blank" class="social-btn" aria-label="Instagram">📸</a>
+                        <a href="https://facebook.com/ecoparkcolores" target="_blank" class="social-btn" aria-label="Facebook">👍</a>
+                        <a href="https://tiktok.com/@ecoparkcolores" target="_blank" class="social-btn" aria-label="TikTok">🎵</a>
                     </div>
                 </div>
+
+                <!-- RNT -->
+                <div class="footer-rnt">
+                    <div class="rnt-badge">
+                        <div class="rnt-logo">🏛️</div>
+                        <div>
+                            <p class="rnt-label">Registro Nacional de Turismo</p>
+                            <p class="rnt-numero" id="footer_rnt">RNT N.° Pendiente de Actualización</p>
+                            <p class="rnt-entidad">MinComercio · Industria y Turismo · Colombia</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Contacto -->
                 <div>
-                    <h4 class="text-white font-bold mb-6">Enlaces Rápidos</h4>
-                    <ul class="space-y-4">
-                        <li><a href="#servicios" class="hover:text-white transition">Nuestros Servicios</a></li>
-                        <li><a href="#mision" class="hover:text-white transition">Misión y Propósito</a></li>
-                        <li><a href="#gastronomia" class="hover:text-white transition">Restaurante</a></li>
-                        <li><a href="#" class="hover:text-white transition">Términos y Condiciones</a></li>
+                    <h4 class="footer-title">Contacto</h4>
+                    <ul class="footer-list">
+                        <li>📍 <span id="footer_direccion">Villavicencio, Meta, Colombia</span></li>
+                        <li>📞 <a id="footer_telefono" href="tel:+573102200917">+57 310 2200917</a></li>
+                        <li>📧 <a id="footer_email" href="mailto:info@ecoparkcolores.com">info@ecoparkcolores.com</a></li>
+                        <li>⏰ <span id="footer_horario">Sáb - Dom: 9am - 5pm</span></li>
                     </ul>
                 </div>
+
+                <!-- Legal -->
                 <div>
-                    <h4 class="text-white font-bold mb-6">Contacto</h4>
-                    <ul class="space-y-4">
-                        <li>📍 Villavicencio, Meta</li>
-                        <li>📞 +57 310 2200917</li>
-                        <li>📧 info@ecoparkcolores.com</li>
-                        <li>⏰ Sáb - Dom: 9am - 5pm</li>
+                    <h4 class="footer-title">Legal</h4>
+                    <ul class="footer-list">
+                        <li><a href="#reservar" class="footer-link">📅 Reservas</a></li>
+                        <li><a href="#eventos" class="footer-link">🎂 Eventos</a></li>
+                        <li><button class="footer-link-btn" onclick="abrirModalLegal('habeas')">🔒 Política de Datos Personales</button></li>
+                        <li><button class="footer-link-btn" onclick="abrirModalLegal('terminos')">📄 Términos y Condiciones</button></li>
                     </ul>
                 </div>
             </div>
-            <div class="border-t border-gray-800 pt-8 text-center text-sm">
-                <p>&copy; 2026 Ecopark Mundo de Colores SAS. Todos los derechos reservados. Diseñado con 💚 para ti.</p>
+
+            <!-- Bottom Bar -->
+            <div class="footer-bottom">
+                <p>&copy; 2026 Ecopark Mundo de Colores SAS &middot; NIT: 901.815.124-7 &middot; Villavicencio, Meta</p>
+                <div class="footer-badges">
+                    <span class="badge-legal" onclick="abrirModalLegal('habeas')">🔒 Habeas Data</span>
+                    <span class="badge-legal" onclick="abrirModalLegal('terminos')">📄 Términos</span>
+                </div>
             </div>
         </div>
     </footer>
+
+    <!-- MODAL HABEAS DATA -->
+    <div id="modalHabeas" class="modal">
+        <div class="modal-overlay" onclick="cerrarModalLegal('habeas')"></div>
+        <div class="modal-container modal-legal">
+            <button class="modal-close" onclick="cerrarModalLegal('habeas')"><i data-lucide="x"></i></button>
+            <h2>🔒 Política de Tratamiento de Datos Personales</h2>
+            <div id="habeas_contenido" class="legal-body">
+                <p><strong>ECOPARK MUNDO DE COLORES SAS</strong>, identificada con NIT 901.815.124-7, con domicilio en Villavicencio, Meta, Colombia, en cumplimiento de la Ley Estatutaria 1581 de 2012 y su Decreto Reglamentario 1377 de 2013, informa su política de tratamiento de datos personales:</p>
+                <h4>1. Responsable del Tratamiento</h4>
+                <p>ECOPARK MUNDO DE COLORES SAS. Contacto: info@ecoparkcolores.com · +57 310 2200917.</p>
+                <h4>2. Finalidad del Tratamiento</h4>
+                <p>Los datos recolectados a través del formulario de reservas serán utilizados para: (a) Gestión y confirmación de reservas; (b) Envío de información sobre servicios y promociones; (c) Mejora de la experiencia del usuario; (d) Cumplimiento de obligaciones legales.</p>
+                <h4>3. Datos Recolectados</h4>
+                <p>Nombre, número de WhatsApp, correo electrónico, fecha de visita y número de visitantes.</p>
+                <h4>4. Derechos del Titular</h4>
+                <p>El titular de los datos tiene derecho a conocer, actualizar, rectificar y suprimir sus datos. Para ejercer estos derechos, escriba a info@ecoparkcolores.com.</p>
+                <h4>5. Seguridad</h4>
+                <p>Ecopark adopta medidas técnicas y administrativas para proteger la información personal contra acceso no autorizado, pérdida o alteración.</p>
+                <h4>6. Vigencia</h4>
+                <p>Esta política rige a partir del 1 de enero de 2025 y permanece vigente hasta nueva comunicación.</p>
+            </div>
+            <button onclick="cerrarModalLegal('habeas')" class="btn btn-primary mt-6">Entendido</button>
+        </div>
+    </div>
+
+    <!-- MODAL TÉRMINOS Y CONDICIONES -->
+    <div id="modalTerminos" class="modal">
+        <div class="modal-overlay" onclick="cerrarModalLegal('terminos')"></div>
+        <div class="modal-container modal-legal">
+            <button class="modal-close" onclick="cerrarModalLegal('terminos')"><i data-lucide="x"></i></button>
+            <h2>📄 Términos y Condiciones</h2>
+            <div id="terminos_contenido" class="legal-body">
+                <p><strong>ECOPARK MUNDO DE COLORES SAS</strong> establece los siguientes términos y condiciones para el uso del parque y sus servicios:</p>
+                <h4>1. Reservas</h4>
+                <p>Las reservas se confirman únicamente mediante comunicación directa por WhatsApp o correo electrónico. El formulario en línea es una solicitud; la reserva se activa al recibir confirmación del equipo Ecopark.</p>
+                <h4>2. Cancelaciones</h4>
+                <p>Cancelaciones con más de 48 horas de anticipación: sin costo. Cancelaciones con menos de 48 horas: se cobra el 50% del valor del plan contratado.</p>
+                <h4>3. Reglamento del Parque</h4>
+                <p>• El ingreso de menores de 12 años requiere acompañamiento de adulto responsable.<br>• No se permite ingreso de alimentos ni bebidas alcohólicas externas.<br>• El parque no se hace responsable por objetos perdidos o robados.<br>• Se requiere seguir las instrucciones del personal en todas las atracciones.</p>
+                <h4>4. Restricciones de Salud</h4>
+                <p>Algunas atracciones tienen restricciones de altura, peso o condiciones de salud. El parque se reserva el derecho de negar el acceso a atracciones por razones de seguridad.</p>
+                <h4>5. Fotografías y Video</h4>
+                <p>Al ingresar al parque, el visitante acepta que Ecopark pueda capturar y publicar imágenes del evento para fines de marketing, salvo indicación expresa en contrario.</p>
+                <h4>6. Jurisdicción</h4>
+                <p>Cualquier controversia se resolverá conforme a las leyes de la República de Colombia y la jurisdicción de los tribunales de Villavicencio, Meta.</p>
+            </div>
+            <button onclick="cerrarModalLegal('terminos')" class="btn btn-primary mt-6">Acepto los Términos</button>
+        </div>
+    </div>
 
     <!-- SMART WHATSAPP CHAT -->
     <div class="whatsapp-chat-container">
@@ -569,7 +864,7 @@
                 <button class="chat-btn" onclick="window.open('https://wa.me/573102200917?text=Necesito%20la%20ubicacion%20exacta', '_blank')">📍 Cómo llegar</button>
             </div>
         </div>
-        <div class="whatsapp-bubble" id="whatsappBubble">
+        <div class="whatsapp-bubble" id="whatsappBubble" aria-label="Abrir chat de soporte">
             <i data-lucide="message-circle" class="w-8 h-8"></i>
         </div>
     </div>
@@ -582,4 +877,3 @@
     <script src="script.js"></script>
 </body>
 </html>
-

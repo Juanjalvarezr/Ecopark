@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Ecopark Mundo de Colores</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="stylesheet" href="admin.css">
+</head>
+<body class="bg-gray-100">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <h2 class="text-2xl font-bold text-white">🌈 Admin</h2>
+            <p class="text-green-200 text-sm">Ecopark</p>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="#dashboard" class="nav-link active" data-section="dashboard">
+                <i data-lucide="layout-dashboard"></i> Dashboard
+            </a>
+            <a href="#citas" class="nav-link" data-section="citas">
+                <i data-lucide="calendar"></i> Citas
+            </a>
+            <a href="#calendario" class="nav-link" data-section="calendario">
+                <i data-lucide="calendar-days"></i> Calendario
+            </a>
+            <a href="#medios" class="nav-link" data-section="medios">
+                <i data-lucide="image"></i> Medios
+            </a>
+            <a href="#reseñas" class="nav-link" data-section="reseñas">
+                <i data-lucide="star"></i> Reseñas
+            </a>
+            <a href="#banners" class="nav-link" data-section="banners">
+                <i data-lucide="layout"></i> Banners
+            </a>
+            <a href="#config" class="nav-link" data-section="config">
+                <i data-lucide="settings"></i> Configuración
+            </a>
+            <a href="#contenido" class="nav-link" data-section="contenido">
+                <i data-lucide="file-text"></i> Contenido CMS
+            </a>
+        </nav>
+        <div class="sidebar-footer">
+            <a href="index.html" class="btn btn-outline">
+                <i data-lucide="home"></i> Ver Sitio
+            </a>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <h1 id="pageTitle" class="text-2xl font-bold text-gray-800">Dashboard</h1>
+                <div class="header-actions">
+                    <button id="syncGoogleBtn" class="btn btn-primary flex items-center gap-2">
+                        <i data-lucide="refresh-cw"></i> Sincronizar Google Calendar
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Dashboard Section -->
+        <section id="dashboard" class="content-section active">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon bg-green-500">
+                        <i data-lucide="calendar-check"></i>
+                    </div>
+                    <div class="stat-info">
+                        <p class="stat-label">Citas Hoy</p>
+                        <p class="stat-value" id="citasHoy">0</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon bg-blue-500">
+                        <i data-lucide="calendar"></i>
+                    </div>
+                    <div class="stat-info">
+                        <p class="stat-label">Citas Esta Semana</p>
+                        <p class="stat-value" id="citasSemana">0</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon bg-purple-500">
+                        <i data-lucide="users"></i>
+                    </div>
+                    <div class="stat-info">
+                        <p class="stat-label">Total Visitantes</p>
+                        <p class="stat-value" id="totalVisitantes">0</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon bg-orange-500">
+                        <i data-lucide="clock"></i>
+                    </div>
+                    <div class="stat-info">
+                        <p class="stat-label">Próxima Cita</p>
+                        <p class="stat-value" id="proximaCita">--:--</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
+                <!-- Citas Recientes -->
+                <div class="card">
+                    <h3 class="card-title">Citas Recientes</h3>
+                    <div id="citasRecientes" class="space-y-3">
+                        <!-- Dinámico -->
+                    </div>
+                </div>
+
+                <!-- Servicios Populares -->
+                <div class="card">
+                    <h3 class="card-title">Servicios Más Reservados</h3>
+                    <div id="serviciosPopulares" class="space-y-3">
+                        <!-- Dinámico -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Citas Section -->
+        <section id="citas" class="content-section">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Gestión de Citas</h3>
+                    <button id="nuevaCitaBtn" class="btn btn-primary">
+                        <i data-lucide="plus"></i> Nueva Cita
+                    </button>
+                </div>
+                
+                <!-- Filtros -->
+                <div class="filters">
+                    <input type="date" id="filtroFecha" class="filter-input">
+                    <select id="filtroEstado" class="filter-input">
+                        <option value="">Todos los estados</option>
+                        <option value="pendiente">Pendiente</option>
+                        <option value="confirmada">Confirmada</option>
+                        <option value="completada">Completada</option>
+                        <option value="cancelada">Cancelada</option>
+                        <option value="asistido">Asistido ✅</option>
+                    </select>
+                    <input type="text" id="filtroBusqueda" placeholder="Buscar por nombre o teléfono..." class="filter-input">
+                    <select id="filtroPlan" class="filter-input">
+                        <option value="">Todos los planes</option>
+                        <option value="Pasadía Familiar">Pasadía Familiar</option>
+                        <option value="Almuerzo a la Carta">Almuerzo a la Carta</option>
+                        <option value="Celebración de Cumpleaños">Celebración de Cumpleaños</option>
+                    </select>
+                </div>
+
+                <!-- Tabla de Citas -->
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Fecha</th>
+                                <th>Cliente</th>
+                                <th>Contacto</th>
+                                <th>Plan</th>
+                                <th>Adultos</th>
+                                <th>Niños</th>
+                                <th>Estado</th>
+                                <th>Asistido</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="citasTableBody">
+                            <!-- Dinámico -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- Calendario Section -->
+        <section id="calendario" class="content-section">
+            <div class="card">
+                <h3 class="card-title">Calendario de Citas</h3>
+                <div id="calendarView" class="calendar-view">
+                    <!-- Calendario dinámico -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Configuración Section -->
+        <section id="config" class="content-section">
+            <div class="card">
+                <h3 class="card-title">Configuración Google Calendar</h3>
+                <div class="space-y-6">
+                    <div>
+                        <label class="form-label">API Key de Google</label>
+                        <input type="text" id="googleApiKey" class="form-input" placeholder="Ingresa tu API Key">
+                        <p class="form-hint">Obtén tu API Key en <a href="https://console.cloud.google.com" target="_blank" class="text-blue-500">Google Cloud Console</a></p>
+                    </div>
+                    <div>
+                        <label class="form-label">Client ID</label>
+                        <input type="text" id="googleClientId" class="form-input" placeholder="Ingresa tu Client ID">
+                    </div>
+                    <div>
+                        <label class="form-label">Calendar ID</label>
+                        <input type="text" id="googleCalendarId" class="form-input" placeholder="primary o tu calendar ID">
+                        <p class="form-hint">Usa 'primary' para tu calendario principal</p>
+                    </div>
+                    <button id="saveConfigBtn" class="btn btn-primary">
+                        <i data-lucide="save"></i> Guardar Configuración
+                    </button>
+                    <button id="testConnectionBtn" class="btn btn-outline">
+                        <i data-lucide="plug"></i> Probar Conexión
+                    </button>
+                </div>
+            </div>
+
+            <!-- WEBHOOK CONFIG -->
+            <div class="card mt-6">
+                <h3 class="card-title">🔗 Automatización — Webhook Saliente</h3>
+                <p class="text-sm text-gray-500 mb-4">Configura un endpoint (n8n, Make, Zapier) que recibirá los datos del cliente cuando marques una reserva como <strong>Asistido</strong>. El sistema lo llamará automáticamente con el nombre y WhatsApp del visitante.</p>
+                <div class="space-y-4">
+                    <div>
+                        <label class="form-label">URL del Webhook *</label>
+                        <input type="url" id="webhookUrl" class="form-input" placeholder="https://tu-n8n.app/webhook/ecopark-asistido">
+                        <p class="form-hint">Ejemplo n8n: https://tu-instancia.n8n.cloud/webhook/xxxx</p>
+                    </div>
+                    <div class="form-checkbox">
+                        <input type="checkbox" id="webhookActivo" checked>
+                        <label for="webhookActivo">Activar envío automático al marcar Asistido</label>
+                    </div>
+                    <div class="flex gap-4">
+                        <button id="saveWebhookBtn" class="btn btn-primary">
+                            <i data-lucide="save"></i> Guardar Webhook
+                        </button>
+                        <button id="testWebhookBtn" class="btn btn-outline">
+                            <i data-lucide="send"></i> Probar Webhook
+                        </button>
+                    </div>
+                    <div id="webhookTestResult" class="hidden p-3 rounded-lg text-sm"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Medios Section -->
+        <section id="medios" class="content-section">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Gestión de Medios</h3>
+                    <button id="subirMedioBtn" class="btn btn-primary">
+                        <i data-lucide="upload"></i> Subir Medio
+                    </button>
+                </div>
+                
+                <!-- Tabs -->
+                <div class="flex gap-4 mb-6">
+                    <button class="tab-btn active" data-tab="fotos">📷 Fotos</button>
+                    <button class="tab-btn" data-tab="videos">🎬 Videos</button>
+                </div>
+
+                <!-- Galería de Fotos -->
+                <div id="fotosTab" class="tab-content active">
+                    <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4" id="fotosGrid">
+                        <!-- Dinámico -->
+                    </div>
+                    <div id="noFotos" class="text-center py-12 text-gray-500">
+                        <i data-lucide="image" class="w-16 h-16 mx-auto mb-4 opacity-50"></i>
+                        <p>No hay fotos cargadas</p>
+                        <button onclick="document.getElementById('subirMedioBtn').click()" class="btn btn-outline mt-4">
+                            Subir primera foto
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Galería de Videos -->
+                <div id="videosTab" class="tab-content">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="videosGrid">
+                        <!-- Dinámico -->
+                    </div>
+                    <div id="noVideos" class="text-center py-12 text-gray-500">
+                        <i data-lucide="video" class="w-16 h-16 mx-auto mb-4 opacity-50"></i>
+                        <p>No hay videos cargados</p>
+                        <button onclick="document.getElementById('subirMedioBtn').click()" class="btn btn-outline mt-4">
+                            Subir primer video
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Reseñas Section -->
+        <section id="reseñas" class="content-section">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Reseñas de Google Maps</h3>
+                    <button id="syncReviewsBtn" class="btn btn-primary">
+                        <i data-lucide="refresh-cw"></i> Sincronizar Reseñas
+                    </button>
+                </div>
+
+                <!-- Configuración Google Maps -->
+                <div class="bg-blue-50 p-4 rounded-lg mb-6">
+                    <h4 class="font-bold mb-2">📍 Configuración Google Maps</h4>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="form-label">Place ID de Google Maps</label>
+                            <input type="text" id="googlePlaceId" class="form-input" placeholder="ChIJ... (tu Place ID)">
+                            <p class="form-hint">Encuentra tu Place ID en <a href="https://developers.google.com/maps/documentation/places/web-service/place-id" target="_blank" class="text-blue-500">Google Maps Place ID Finder</a></p>
+                        </div>
+                        <div>
+                            <label class="form-label">API Key de Google Maps</label>
+                            <input type="text" id="googleMapsApiKey" class="form-input" placeholder="Tu API Key">
+                        </div>
+                    </div>
+                    <button id="saveMapsConfigBtn" class="btn btn-primary mt-4">
+                        <i data-lucide="save"></i> Guardar Configuración Maps
+                    </button>
+                </div>
+
+                <!-- Estadísticas de Reseñas -->
+                <div class="stats-grid mb-6">
+                    <div class="stat-card">
+                        <div class="stat-icon bg-yellow-500">
+                            <i data-lucide="star"></i>
+                        </div>
+                        <div class="stat-info">
+                            <p class="stat-label">Rating Promedio</p>
+                            <p class="stat-value" id="avgRating">0.0</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon bg-green-500">
+                            <i data-lucide="message-square"></i>
+                        </div>
+                        <div class="stat-info">
+                            <p class="stat-label">Total Reseñas</p>
+                            <p class="stat-value" id="totalReviews">0</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon bg-blue-500">
+                            <i data-lucide="trending-up"></i>
+                        </div>
+                        <div class="stat-info">
+                            <p class="stat-label">Última Reseña</p>
+                            <p class="stat-value" id="lastReview">--</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Lista de Reseñas -->
+                <div class="space-y-4" id="reviewsList">
+                    <!-- Dinámico -->
+                </div>
+                <div id="noReviews" class="text-center py-12 text-gray-500">
+                    <i data-lucide="star" class="w-16 h-16 mx-auto mb-4 opacity-50"></i>
+                    <p>No hay reseñas sincronizadas</p>
+                    <p class="text-sm">Configura tu Place ID y API Key para comenzar</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Banners Section -->
+        <section id="banners" class="content-section">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Banners y Destacados</h3>
+                    <button id="nuevoBannerBtn" class="btn btn-primary">
+                        <i data-lucide="plus"></i> Nuevo Banner
+                    </button>
+                </div>
+
+                <!-- Lista de Banners -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6" id="bannersList">
+                    <!-- Dinámico -->
+                </div>
+                <div id="noBanners" class="text-center py-12 text-gray-500">
+                    <i data-lucide="layout" class="w-16 h-16 mx-auto mb-4 opacity-50"></i>
+                    <p>No hay banners configurados</p>
+                    <button onclick="document.getElementById('nuevoBannerBtn').click()" class="btn btn-outline mt-4">
+                        Crear primer banner
+                    </button>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- SECCION CMS CONTENIDO -->
+    <!-- Esta sección se renderiza dentro de main a través de JS al agregar la sección dinámicamente. Se inyecta desde admin.js -->
+
+    <!-- Sección estática como fallback en el HTML -->
+    <style>
+        #contenido { display: none; }
+        #contenido.active { display: block; }
+        .cms-section-title { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #6b7280; margin-bottom: 16px; margin-top: 32px; }
+        .cms-field-group { margin-bottom: 20px; }
+        .cms-textarea { min-height: 120px; resize: vertical; }
+    </style>
+
+    <!-- Modal Nueva Cita -->
+    <div id="citaModal" class="modal">
+        <div class="modal-overlay"></div>
+        <div class="modal-container">
+            <div class="modal-header">
+                <h3 id="modalTitle" class="text-xl font-bold">Nueva Cita</h3>
+                <button class="modal-close" id="closeCitaModal">
+                    <i data-lucide="x"></i>
+                </button>
+            </div>
+            <form id="citaForm" class="modal-body">
+                <input type="hidden" id="citaId">
+                
+                <div class="form-grid">
+                    <div>
+                        <label class="form-label">Nombre del Cliente *</label>
+                        <input type="text" id="citaNombre" class="form-input" required>
+                    </div>
+                    <div>
+                        <label class="form-label">Teléfono *</label>
+                        <input type="tel" id="citaTelefono" class="form-input" required>
+                    </div>
+                </div>
+
+                <div class="form-grid">
+                    <div>
+                        <label class="form-label">Fecha *</label>
+                        <input type="date" id="citaFecha" class="form-input" required>
+                    </div>
+                    <div>
+                        <label class="form-label">Hora *</label>
+                        <input type="time" id="citaHora" class="form-input" required>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="form-label">Servicio *</label>
+                    <select id="citaServicio" class="form-input" required>
+                        <option value="">Selecciona un servicio</option>
+                        <option value="Resbalador de Colores">Resbalador de Colores</option>
+                        <option value="Columpio 360">Columpio 360</option>
+                        <option value="Piscina Refrescante">Piscina Refrescante</option>
+                        <option value="Granja Interactiva">Granja Interactiva</option>
+                        <option value="Restaurante">Restaurante</option>
+                        <option value="Pasaporte Experiencia">Pasaporte Experiencia (Completo)</option>
+                        <option value="Plan Cumpleaños">Plan Cumpleaños</option>
+                    </select>
+                </div>
+
+                <div class="form-grid">
+                    <div>
+                        <label class="form-label">Número de Personas *</label>
+                        <input type="number" id="citaPersonas" class="form-input" min="1" required>
+                    </div>
+                    <div>
+                        <label class="form-label">Estado</label>
+                        <select id="citaEstado" class="form-input">
+                            <option value="pendiente">Pendiente</option>
+                            <option value="confirmada">Confirmada</option>
+                            <option value="completada">Completada</option>
+                            <option value="cancelada">Cancelada</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="form-label">Notas</label>
+                    <textarea id="citaNotas" class="form-input" rows="3"></textarea>
+                </div>
+
+                <div class="form-checkbox">
+                    <input type="checkbox" id="citaSyncGoogle" checked>
+                    <label for="citaSyncGoogle">Sincronizar con Google Calendar</label>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary">
+                        <i data-lucide="save"></i> Guardar Cita
+                    </button>
+                    <button type="button" class="btn btn-outline" id="cancelCitaBtn">
+                        Cancelar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Subir Medio -->
+    <div id="medioModal" class="modal">
+        <div class="modal-overlay"></div>
+        <div class="modal-container">
+            <div class="modal-header">
+                <h3 class="text-xl font-bold">Subir Medio</h3>
+                <button class="modal-close" id="closeMedioModal">
+                    <i data-lucide="x"></i>
+                </button>
+            </div>
+            <form id="medioForm" class="modal-body">
+                <div>
+                    <label class="form-label">Tipo de Medio *</label>
+                    <select id="medioTipo" class="form-input" required>
+                        <option value="foto">📷 Foto</option>
+                        <option value="video">🎬 Video</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="form-label">URL del Medio *</label>
+                    <input type="url" id="medioUrl" class="form-input" placeholder="https://..." required>
+                    <p class="form-hint">Pega la URL de tu imagen o video (YouTube, Vimeo, URL directa)</p>
+                </div>
+
+                <div>
+                    <label class="form-label">Título</label>
+                    <input type="text" id="medioTitulo" class="form-input" placeholder="Título descriptivo">
+                </div>
+
+                <div>
+                    <label class="form-label">Categoría</label>
+                    <select id="medioCategoria" class="form-input">
+                        <option value="general">General</option>
+                        <option value="resbalador">Resbalador</option>
+                        <option value="piscina">Piscina</option>
+                        <option value="granja">Granja</option>
+                        <option value="restaurante">Restaurante</option>
+                        <option value="eventos">Eventos</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="form-label">Descripción</label>
+                    <textarea id="medioDescripcion" class="form-input" rows="3" placeholder="Descripción del medio..."></textarea>
+                </div>
+
+                <div class="form-checkbox">
+                    <input type="checkbox" id="medioDestacado">
+                    <label for="medioDestacado">Marcar como destacado</label>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary">
+                        <i data-lucide="upload"></i> Subir Medio
+                    </button>
+                    <button type="button" class="btn btn-outline" id="cancelMedioBtn">
+                        Cancelar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Nuevo Banner -->
+    <div id="bannerModal" class="modal">
+        <div class="modal-overlay"></div>
+        <div class="modal-container">
+            <div class="modal-header">
+                <h3 id="bannerModalTitle" class="text-xl font-bold">Nuevo Banner</h3>
+                <button class="modal-close" id="closeBannerModal">
+                    <i data-lucide="x"></i>
+                </button>
+            </div>
+            <form id="bannerForm" class="modal-body">
+                <input type="hidden" id="bannerId">
+
+                <div>
+                    <label class="form-label">Título *</label>
+                    <input type="text" id="bannerTitulo" class="form-input" required placeholder="Título del banner">
+                </div>
+
+                <div>
+                    <label class="form-label">URL de la Imagen *</label>
+                    <input type="url" id="bannerImagen" class="form-input" required placeholder="https://...">
+                </div>
+
+                <div>
+                    <label class="form-label">Texto del Botón</label>
+                    <input type="text" id="bannerBotonTexto" class="form-input" placeholder="Reservar Ahora">
+                </div>
+
+                <div>
+                    <label class="form-label">URL del Botón</label>
+                    <input type="url" id="bannerBotonUrl" class="form-input" placeholder="#contacto">
+                </div>
+
+                <div>
+                    <label class="form-label">Posición</label>
+                    <select id="bannerPosicion" class="form-input">
+                        <option value="hero">Hero (Principal)</option>
+                        <option value="servicios">Servicios</option>
+                        <option value="testimonios">Testimonios</option>
+                        <option value="footer">Footer</option>
+                    </select>
+                </div>
+
+                <div class="form-checkbox">
+                    <input type="checkbox" id="bannerActivo" checked>
+                    <label for="bannerActivo">Banner activo</label>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary">
+                        <i data-lucide="save"></i> Guardar Banner
+                    </button>
+                    <button type="button" class="btn btn-outline" id="cancelBannerBtn">
+                        Cancelar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+    <script src="admin.js"></script>
+</body>
+</html>

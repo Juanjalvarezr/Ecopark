@@ -229,6 +229,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const navbar = document.querySelector('.navbar');
     const heroContent = document.querySelector('.hero-content');
     const clouds = document.querySelectorAll('.cloud');
+    const whatsappBubble = document.getElementById('whatsappBubble');
+    const whatsappWindow = document.getElementById('whatsappWindow');
+    const activityBubble = document.getElementById('liveActivity');
 
     window.addEventListener('scroll', () => {
         const scrolled = window.scrollY;
@@ -252,8 +255,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Clouds movement
             clouds.forEach((cloud, index) => {
-                const speed = (index + 1) * 0.4;
+                const speed = (index + 1) * 0.2; // Velocidad un poco más sutil
                 const cloudY = -(scrolled * speed);
+                // Actualizamos la variable para que el CSS maneje el movimiento vertical
                 cloud.style.setProperty('--cloud-y', `${cloudY}px`);
             });
         }
@@ -265,12 +269,29 @@ document.addEventListener('DOMContentLoaded', () => {
         entries.forEach(entry => {
             if (entry.isIntersecting) {
                 entry.target.classList.add('is-visible');
+                
+                // Mejora: Cambio de color dinámico basado en la sección
+                const sectionColor = entry.target.dataset.sectionColor;
+                if (sectionColor) {
+                    document.documentElement.style.setProperty('--current-section-color', sectionColor);
+                    // Creamos una versión con transparencia para el brillo (glow)
+                    const glowColor = sectionColor + '4D'; // 4D es 30% de opacidad en HEX
+                    document.documentElement.style.setProperty('--glow-color', glowColor);
+                    
+                    // Si el fondo es oscuro, ajustar contraste de navbar
+                    if (navbar.classList.contains('scrolled')) {
+                        const isDark = ['#065f46', '#1e1b4b', '#2E7D32'].includes(sectionColor);
+                        navbar.style.color = isDark ? 'white' : 'var(--text-dark)';
+                        navbar.querySelectorAll('a').forEach(a => a.style.color = isDark ? 'white' : 'inherit');
+                    }
+                }
             }
         });
     }, { threshold: 0.1 });
 
     revealElements.forEach(el => revealObserver.observe(el));
 
+    // Efecto Magnético sutil para el botón de WhatsApp
     // 6. MOBILE MENU
     const mobileMenuBtn = document.querySelector('button.md\\:hidden');
     const navLinks = document.querySelector('.nav-links');
@@ -289,8 +310,19 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    if (whatsappBubble) {
+        whatsappBubble.addEventListener('mousemove', (e) => {
+            const rect = whatsappBubble.getBoundingClientRect();
+            const x = (e.clientX - rect.left - rect.width / 2) * 0.4;
+            const y = (e.clientY - rect.top - rect.height / 2) * 0.4;
+            whatsappBubble.style.transform = `translate3d(${x}px, ${y}px, 0) scale(1.1)`;
+        });
+        whatsappBubble.addEventListener('mouseleave', () => {
+            whatsappBubble.style.transform = `translate3d(0, 0, 0) scale(1)`;
+        });
+    }
+
     // 7. LIVE ACTIVITY SIMULATION (MIXED WITH REAL LOGS)
-    const activityBubble = document.getElementById('liveActivity');
     const activityText = document.getElementById('activityText');
     const simulatedMessages = [
         "¡Alguien acaba de reservar el Resbalador!",
@@ -329,8 +361,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }, 4000);
 
     // 8. SMART WHATSAPP TOGGLE
-    const whatsappBubble = document.getElementById('whatsappBubble');
-    const whatsappWindow = document.getElementById('whatsappWindow');
     if (whatsappBubble && whatsappWindow) {
         whatsappBubble.addEventListener('click', () => {
             whatsappWindow.classList.toggle('active');
@@ -397,4 +427,227 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     console.log('🚀 Ecopark V3 - Interactive Experience Ready');
+
+    // ==================== CMS READER ====================
+    // Lee datos del CMS guardados en el admin y actualiza la landing
+    const cms = JSON.parse(localStorage.getItem('ecopark_cms') || '{}');
+    const applyIfExists = (id, val) => {
+        const el = document.getElementById(id);
+        if (el && val) el.textContent = val;
+    };
+    const applyHrefIfExists = (id, val, prefix='') => {
+        const el = document.getElementById(id);
+        if (el && val) { el.textContent = val; el.href = prefix + val; }
+    };
+
+    applyIfExists('footer_descripcion', cms.footer_descripcion);
+    applyIfExists('footer_rnt', cms.rnt_numero ? `RNT N.° ${cms.rnt_numero}` : null);
+    applyIfExists('footer_horario', cms.horarios);
+    applyIfExists('footer_direccion', cms.contacto_direccion);
+    
+    // Actualización dinámica de botones de contacto desde el CMS
+    if (cms.contacto_telefono) {
+        const telEl = document.getElementById('footer_telefono');
+        if (telEl) { telEl.textContent = cms.contacto_telefono; telEl.href = 'tel:' + cms.contacto_telefono.replace(/\s/g,''); }
+    }
+    if (cms.contacto_email) {
+        const emEl = document.getElementById('footer_email');
+        if (emEl) { emEl.textContent = cms.contacto_email; emEl.href = 'mailto:' + cms.contacto_email; }
+    }
+    if (cms.habeas_data_texto) {
+        const hEl = document.getElementById('habeas_contenido');
+        if (hEl) hEl.innerHTML = cms.habeas_data_texto;
+    }
+    if (cms.terminos_texto) {
+        const tEl = document.getElementById('terminos_contenido');
+        if (tEl) tEl.innerHTML = cms.terminos_texto;
+    }
+
+    // ==================== MODALES LEGALES ====================
+    window.abrirModalLegal = (tipo) => {
+        const id = tipo === 'habeas' ? 'modalHabeas' : 'modalTerminos';
+        const modal = document.getElementById(id);
+        if (modal) { modal.classList.add('active'); document.body.style.overflow = 'hidden'; }
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+    };
+
+    window.cerrarModalLegal = (tipo) => {
+        const id = tipo === 'habeas' ? 'modalHabeas' : 'modalTerminos';
+        const modal = document.getElementById(id);
+        if (modal) { modal.classList.remove('active'); document.body.style.overflow = 'auto'; }
+    };
+
+    // ==================== CONTADOR DE PERSONAS ====================
+    document.querySelectorAll('.counter-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const targetId = btn.dataset.target;
+            const action = btn.dataset.action;
+            const input = document.getElementById(targetId);
+            if (!input) return;
+            let val = parseInt(input.value) || 0;
+            const min = parseInt(input.min) || 0;
+            const max = parseInt(input.max) || 99;
+            if (action === '+') val = Math.min(val + 1, max);
+            if (action === '-') val = Math.max(val - 1, min);
+            input.value = val;
+        });
+    });
+
+    // ==================== SELECTOR DE PLAN DESDE URL ====================
+    // Permite pre-seleccionar plan desde enlace #reservar?plan=cumpleanos
+    const urlParams = new URLSearchParams(window.location.search);
+    const preplan = urlParams.get('plan');
+    if (preplan === 'cumpleanos') {
+        const radioCP = document.querySelector('input[name="plan"][value="Celebración de Cumpleaños"]');
+        if (radioCP) radioCP.checked = true;
+    }
+
+    // ==================== FORMULARIO DE RESERVAS ====================
+    const reservaForm = document.getElementById('reservaForm');
+    const reservaConfirmacion = document.getElementById('reservaConfirmacion');
+    const btnReservar = document.getElementById('btnReservar');
+    const btnReservarText = document.getElementById('btnReservarText');
+
+    // Bloquear fechas pasadas
+    const fechaInput = document.getElementById('res_fecha');
+    if (fechaInput) {
+        const hoy = new Date();
+        hoy.setDate(hoy.getDate() + 1); // Mínimo mañana
+        fechaInput.min = hoy.toISOString().split('T')[0];
+    }
+
+    if (reservaForm) {
+        reservaForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+
+            // Validación manual
+            const nombre = document.getElementById('res_nombre').value.trim();
+            const whatsapp = document.getElementById('res_whatsapp').value.trim();
+            const correo = document.getElementById('res_correo').value.trim();
+            const fecha = document.getElementById('res_fecha').value;
+            const adultos = parseInt(document.getElementById('res_adultos').value) || 0;
+            const ninos = parseInt(document.getElementById('res_ninos').value) || 0;
+            const planRadio = document.querySelector('input[name="plan"]:checked');
+            const habeas = document.getElementById('res_habeas').checked;
+            const notas = document.getElementById('res_notas').value.trim();
+
+            // Clear errors
+            document.querySelectorAll('.form-group input, .form-group textarea').forEach(el => el.classList.remove('error'));
+
+            let errors = [];
+            if (!nombre) { document.getElementById('res_nombre').classList.add('error'); errors.push('nombre'); }
+            if (!whatsapp || whatsapp.length < 7) { document.getElementById('res_whatsapp').classList.add('error'); errors.push('whatsapp'); }
+            if (!correo || !correo.includes('@')) { document.getElementById('res_correo').classList.add('error'); errors.push('correo'); }
+            if (!fecha) { document.getElementById('res_fecha').classList.add('error'); errors.push('fecha'); }
+            if (adultos < 1) errors.push('adultos');
+            if (!planRadio) errors.push('plan');
+            if (!habeas) errors.push('habeas');
+
+            if (errors.length > 0) {
+                if (!planRadio) {
+                    const planSel = document.getElementById('planSelector');
+                    if (planSel) planSel.style.outline = '2px solid #ef4444';
+                }
+                if (!habeas) {
+                    const hCheck = document.querySelector('.form-check');
+                    if (hCheck) hCheck.style.borderColor = '#ef4444';
+                }
+                return;
+            }
+
+            // Reset visual errors
+            const planSel = document.getElementById('planSelector');
+            if (planSel) planSel.style.outline = 'none';
+            const hCheck = document.querySelector('.form-check');
+            if (hCheck) hCheck.style.borderColor = '#a7f3d0';
+
+            // Loading state
+            btnReservar.disabled = true;
+            btnReservarText.textContent = '⏳ Enviando...';
+
+            // Guardar reserva en localStorage
+            const nuevaReserva = {
+                id: Date.now().toString(),
+                cliente: nombre,
+                telefono: '+57' + whatsapp,
+                correo: correo,
+                fecha: fecha,
+                adultos: adultos,
+                ninos: ninos,
+                plan: planRadio.value,
+                servicio: planRadio.value,
+                notas: notas,
+                estado: 'pendiente',
+                asistido: false,
+                timestamp_asistencia: null,
+                syncGoogle: false,
+                timestamp: Date.now(),
+                fuente: 'landing'
+            };
+
+            const citas = JSON.parse(localStorage.getItem('ecopark_citas') || '[]');
+            citas.push(nuevaReserva);
+            localStorage.setItem('ecopark_citas', JSON.stringify(citas));
+
+            // Log de actividad
+            logActivity(`¡Nueva reserva de ${nombre} para ${planRadio.value}!`);
+
+            // Simular pequeña espera (1s) para UX
+            setTimeout(() => {
+                // Mostrar confirmación
+                reservaForm.style.display = 'none';
+                reservaConfirmacion.style.display = 'block';
+
+                // Detalles de confirmación
+                const formatFecha = (f) => {
+                    const [y,m,d] = f.split('-');
+                    const meses = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+                    return `${parseInt(d)} de ${meses[parseInt(m)-1]} de ${y}`;
+                };
+
+                document.getElementById('confirmDetalles').innerHTML = `
+                    <strong>👤 Nombre:</strong> ${nombre}<br>
+                    <strong>📱 WhatsApp:</strong> +57 ${whatsapp}<br>
+                    <strong>📧 Correo:</strong> ${correo}<br>
+                    <strong>📅 Fecha:</strong> ${formatFecha(fecha)}<br>
+                    <strong>👥 Visitantes:</strong> ${adultos} adulto${adultos!==1?'s':''} + ${ninos} niño${ninos!==1?'s':''}<br>
+                    <strong>🎯 Plan:</strong> ${planRadio.value}
+                `;
+
+                // ===== NOTIFICACIÓN WHATSAPP AL ADMIN =====
+                // Número admin configurable desde CMS, por defecto el del parque
+                const adminWaNum = (JSON.parse(localStorage.getItem('ecopark_cms') || '{}').contacto_whatsapp || '573102200917').replace(/\D/g,'');
+
+                const msgAdmin = encodeURIComponent(
+                    `🌈 *NUEVA RESERVA — Ecopark*\n\n` +
+                    `👤 *Cliente:* ${nombre}\n` +
+                    `📱 *WhatsApp:* +57 ${whatsapp}\n` +
+                    `📧 *Correo:* ${correo}\n` +
+                    `📅 *Fecha de visita:* ${formatFecha(fecha)}\n` +
+                    `👥 *Adultos:* ${adultos}   🧒 *Niños:* ${ninos}\n` +
+                    `🎯 *Plan:* ${planRadio.value}\n` +
+                    `${notas ? '📝 *Notas:* ' + notas + '\n' : ''}` +
+                    `\n_Solicitud recibida desde la web el ${new Date().toLocaleString('es-CO')}_`
+                );
+
+                // WhatsApp de respaldo para el cliente (botón en pantalla de confirmación)
+                const msgCliente = encodeURIComponent(
+                    `¡Hola Ecopark! 🌈 Acabo de enviar mi solicitud de reserva.\n\n` +
+                    `👤 Nombre: ${nombre}\n📅 Fecha: ${formatFecha(fecha)}\n` +
+                    `👥 ${adultos} adulto(s) + ${ninos} niño(s)\n🎯 Plan: ${planRadio.value}\n\n` +
+                    `¿Pueden confirmarme la disponibilidad? ¡Gracias!`
+                );
+                document.getElementById('confirmWA').href = `https://wa.me/${adminWaNum}?text=${msgCliente}`;
+
+                // ===== ABRIR WHATSAPP AL ADMIN AUTOMÁTICAMENTE =====
+                // Se abre en nueva pestaña para notificar al parque sin interrumpir la experiencia del cliente
+                setTimeout(() => {
+                    window.open(`https://wa.me/${adminWaNum}?text=${msgAdmin}`, '_blank');
+                }, 800);
+
+                btnReservar.disabled = false;
+                btnReservarText.textContent = '📅 Enviar Solicitud de Reserva';
+            }, 1000);
+        });
+    }
 });
