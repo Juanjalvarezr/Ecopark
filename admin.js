@@ -24,10 +24,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     loginForm?.addEventListener('submit', (e) => {
         e.preventDefault();
-        const user = document.getElementById('adminUser').value;
+        const user = document.getElementById('adminUser').value.trim().toLowerCase();
         const pass = document.getElementById('adminPass').value;
 
-        if (user === AUTH_CONFIG.user && pass === AUTH_CONFIG.pass) {
+        if (user === AUTH_CONFIG.user.toLowerCase() && pass === AUTH_CONFIG.pass) {
             sessionStorage.setItem('ecopark_authenticated', 'true');
             if (loginScreen) loginScreen.style.display = 'none';
         } else {
@@ -1005,31 +1005,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // ==================== INITIALIZATION ====================
-    loadCitas();
-    loadGoogleConfig();
-    loadMedios();
-    loadBanners();
-    loadReviews();
-    loadMapsConfig();
-    loadWebhookConfig();
-    loadCmsConfig();
-    injectCmsSection();
-    injectContenidoSection();
-    updateDashboard();
-    renderCitasTable();
-    renderCalendar();
-    renderMedios();
-    renderReviews();
-    renderBanners();
-
-    console.log('🚀 Admin Panel - Ecopark Full CRM Ready');
-});
-
-// ==================== PATCH: Rewrite renderCitasTable for new columns ====================
-// This runs AFTER the DOMContentLoaded block above finishes setting up state
-
-document.addEventListener('DOMContentLoaded', () => {
     // ============ WEBHOOK CONFIG ============
     let webhookConfig = { url: '', activo: true };
 
@@ -1622,9 +1597,33 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // Init full table on load
+
+    // ==================== INITIALIZATION ====================
+    // Cargamos configuraciones primero
+    loadWebhookConfig();
+    loadCmsConfig();
+    loadCitas();
+    loadGoogleConfig();
+    loadMedios();
+    loadBanners();
+    loadReviews();
+    loadMapsConfig();
+
+    // Inyectamos secciones y actualizamos UI
+    injectCmsSection();
+    injectContenidoSection();
+    updateDashboard();
+    renderCitasTable();
+    renderCalendar();
+    renderMedios();
+    renderReviews();
+    renderBanners();
+
+    // Inicialización de tabla extendida
     setTimeout(() => {
-        window.renderCitasTableFull();
+        if (window.renderCitasTableFull) window.renderCitasTableFull();
         updateAsistidos();
     }, 200);
+
+    console.log('🚀 Admin Panel - Ecopark Full CRM Ready');
 });
