@@ -21,16 +21,16 @@ document.addEventListener('DOMContentLoaded', () => {
             targetLink.click();
         } else {
             // Fallback manual si el click falla
-            sections.forEach(s => s.classList.remove('active'));
+            sections.forEach(s => { s.classList.remove('active'); s.style.display = 'none'; });
             const section = document.getElementById(sectionId);
-            if (section) section.classList.add('active');
+            if (section) { section.classList.add('active'); section.style.display = 'block'; }
             if (pageTitle) pageTitle.textContent = sectionId.toUpperCase();
         }
     };
 
     const checkAuth = () => {
         if (sessionStorage.getItem('ecopark_authenticated') === 'true') {
-            if (loginScreen) loginScreen.classList.add('hidden');
+            if (loginScreen) loginScreen.style.display = 'none';
             navigateToSection('dashboard');
         }
     };
@@ -42,7 +42,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (user === AUTH_CONFIG.user.toLowerCase() && pass === AUTH_CONFIG.pass) {
             sessionStorage.setItem('ecopark_authenticated', 'true');
-            if (loginScreen) loginScreen.classList.add('hidden');
+            if (loginScreen) loginScreen.style.display = 'none';
             console.log("Login exitoso, navegando a dashboard...");
             navigateToSection('dashboard');
         } else {
