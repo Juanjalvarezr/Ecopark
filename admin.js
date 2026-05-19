@@ -288,12 +288,16 @@ document.addEventListener('DOMContentLoaded', () => {
         const user = document.getElementById('adminUser')?.value.trim().toLowerCase();
         const pass = document.getElementById('adminPass')?.value;
 
+        console.log("Intentando login con:", user);
+
         if (user === AUTH_CONFIG.user.toLowerCase() && pass === AUTH_CONFIG.pass) {
             sessionStorage.setItem('ecopark_authenticated', 'true');
             if (loginScreen) loginScreen.style.display = 'none';
             console.log("Login exitoso, navegando a dashboard...");
             navigateToSection('dashboard');
+            showNotification('¡Bienvenido al sistema!', 'success');
         } else {
+            console.error("Credenciales incorrectas");
             if (loginError) loginError.classList.remove('hidden');
             setTimeout(() => loginError?.classList.add('hidden'), 3000);
         }
@@ -2064,6 +2068,16 @@ document.addEventListener('DOMContentLoaded', () => {
         if (window.renderCitasTableFull) window.renderCitasTableFull();
         updateAsistidos();
     }, 200);
+
+    // Sincronización entre pestañas: si se añade una reserva desde la landing, actualizamos el admin
+    window.addEventListener('storage', (event) => {
+        if (event.key === 'ecopark_citas') {
+            loadCitas();
+            renderCitasTable();
+            if (window.renderCitasTableFull) window.renderCitasTableFull();
+            showNotification('Reservas sincronizadas desde otra pestaña', 'info');
+        }
+    });
 
     // Ejecutar autenticación al final para asegurar que el DOM y los listeners estén listos
     checkAuth();
