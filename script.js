@@ -9,6 +9,11 @@ document.addEventListener('DOMContentLoaded', () => {
         lucide.createIcons();
     }
 
+    // 0. INITIALIZE SUPABASE
+    const SUPABASE_URL = 'https://gisljislsdgrfwgzshtxt.supabase.co'; // Tu URL de proyecto Supabase
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdpc2xqaXNsZGdyZndnemNodHh0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkyMjMwNDAsImV4cCI6MjA5NDc5OTA0MH0.1_a6G7gtbqpYzXaNmrhakkSWaD0kGqJBHSxsWPlQ1OA'; // Tu Anon Public Key
+    const supabaseClient = typeof supabase !== 'undefined' ? supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
+
     // 1. MUSIC CONTROLLER
     const musicToggle = document.getElementById('musicToggle');
     const bgMusic = document.getElementById('bgMusic');
@@ -144,31 +149,24 @@ document.addEventListener('DOMContentLoaded', () => {
         iconContainer.style.backgroundColor = data.color;
         iconContainer.innerHTML = `<i data-lucide="${data.icon}"></i>`;
         
-        // Populate Swiper (Combine hardcoded and dynamic images from Admin/LocalStorage)
-        const uploadedMedia = getStorageData('ecopark_medios');
-        const categoryMap = {
-            "Resbalador de Colores": "Resbalador",
-            "Columpio 360": "Eventos",
-            "Piscina Refrescante": "Piscina",
-            "Granja Interactiva": "Granja",
-            "Restaurante Mundo de Colores": "Restaurante"
+        // Populate Swiper (Uso de Medios desde Supabase)
+        const loadModalMedia = async () => {
+            let images = data.images.split(',').map(img => img.trim());
+            
+            if (supabaseClient) {
+                const categoryMap = { "Resbalador de Colores": "resbalador", "Columpio 360": "eventos", "Piscina Refrescante": "piscina", "Granja Interactiva": "granja", "Restaurante Mundo de Colores": "restaurante" };
+                const { data: dbMedios } = await supabaseClient.from('medios').select('url').eq('categoria', categoryMap[data.title]).eq('tipo', 'foto');
+                if (dbMedios) images = [...dbMedios.map(m => m.url), ...images];
+            }
+
+            swiperWrapper.innerHTML = images.map(img => `
+                <div class="swiper-slide h-full">
+                    <img src="${img}" class="w-full h-full object-cover rounded-2xl" loading="lazy" onerror="this.src='https://images.unsplash.com/photo-1501854140801-50d01698950b?w=800'">
+                </div>
+            `).join('');
         };
         
-        const category = categoryMap[data.title];
-        const dynamicPhotos = uploadedMedia
-            .filter(m => m.type === 'Foto' && m.category === category)
-            .map(m => m.url);
-
-        let images = data.images.split(',').map(img => img.trim());
-        if (dynamicPhotos.length > 0) {
-            images = [...dynamicPhotos, ...images];
-        }
-
-        swiperWrapper.innerHTML = images.map(img => `
-            <div class="swiper-slide h-full">
-                <img src="${img}" class="w-full h-full object-cover rounded-2xl" loading="lazy" onerror="this.src='https://images.unsplash.com/photo-1501854140801-50d01698950b?w=800'">
-            </div>
-        `).join('');
+        loadModalMedia();
         modal.classList.add('active');
         document.body.style.overflow = 'hidden';
 
@@ -508,143 +506,142 @@ document.addEventListener('DOMContentLoaded', () => {
     console.log('🚀 Ecopark V3 - Interactive Experience Ready');
 
     // ==================== CMS READER ====================
-    // Lee datos del CMS guardados en el admin y actualiza la landing
-    const cms = JSON.parse(localStorage.getItem('ecopark_cms') || '{}');
-    const applyIfExists = (id, val) => {
-        const el = document.getElementById(id);
-        if (el && val) el.textContent = val;
-    };
-    const applyHrefIfExists = (id, val, prefix='') => {
-        const el = document.getElementById(id);
-        if (el && val) { el.textContent = val; el.href = prefix + val; }
-    };
-
-    // Actualización dinámica de textos del Hero
-    if (cms.hero_titulo) {
-        const heroTitle = document.querySelector('.hero-title');
-        if (heroTitle) heroTitle.innerHTML = cms.hero_titulo;
-    }
-    if (cms.hero_subtitulo) {
-        const heroDesc = document.querySelector('.hero-content p');
-        if (heroDesc) heroDesc.textContent = cms.hero_subtitulo;
-    }
-
-    // Actualización dinámica de descripciones de servicios (cards)
-    const updateCardDesc = (title, newDesc) => {
-        const card = document.querySelector(`.service-card-3d[data-title="${title}"]`);
-        if (card && newDesc) {
-            card.dataset.description = newDesc;
-        }
-    };
-
-    updateCardDesc("Resbalador de Colores", cms.srv_resbalador_desc);
-    updateCardDesc("Columpio 360", cms.srv_columpio_desc);
-    updateCardDesc("Piscina Refrescante", cms.srv_piscina_desc);
-    updateCardDesc("Granja Interactiva", cms.srv_granja_desc);
-    updateCardDesc("Restaurante Mundo de Colores", cms.srv_restaurante_desc);
-
-    // Actualización dinámica de precios de pasaportes
-    if (cms.pasaporte_experiencia_precio) {
-        const el = document.getElementById('pasaporte_experiencia_precio_display');
-        if (el) el.textContent = cms.pasaporte_experiencia_precio;
-    }
-    if (cms.plan_cumpleanos_precio) {
-        const el = document.getElementById('plan_cumpleanos_precio_display');
-        if (el) el.textContent = cms.plan_cumpleanos_precio;
-    }
-    if (cms.escapada_bogotana_precio) {
-        const el = document.getElementById('escapada_bogotana_precio_display');
-        if (el) el.textContent = cms.escapada_bogotana_precio;
-    }
-
-    // Actualización de los precios en los data-attributes de los pasaportes (si existen)
-    // No hay un modal de pasaportes, así que solo actualizamos el display.
-
-
-    // Sincronización de Botones de reserva en modales/tarjetas
-    // Si se quiere cambiar el número de WhatsApp centralizado
-    const contactWa = cms.contacto_whatsapp || '573102200917';
-    
-    // Actualizar botones de reserva específicos de la página
-    document.querySelectorAll('a[href^="https://wa.me/573102200917"]').forEach(btn => {
-        const currentUrl = new URL(btn.href);
-        const text = currentUrl.searchParams.get('text') || '';
-        btn.href = `https://wa.me/${contactWa}?text=${encodeURIComponent(text)}`;
-    });
-
-    applyIfExists('footer_descripcion', cms.footer_descripcion);
-    applyIfExists('footer_rnt', cms.rnt_numero ? `RNT N.° ${cms.rnt_numero}` : null);
-    applyIfExists('footer_horario', cms.horarios);
-    applyIfExists('footer_direccion', cms.contacto_direccion);
-    
-    // Actualización dinámica de botones de contacto desde el CMS
-    if (cms.contacto_telefono) {
-        const telEl = document.getElementById('footer_telefono');
-        if (telEl) { telEl.textContent = cms.contacto_telefono; telEl.href = 'tel:' + cms.contacto_telefono.replace(/\s/g,''); }
-    }
-    if (cms.contacto_email) {
-        const emEl = document.getElementById('footer_email');
-        if (emEl) { emEl.textContent = cms.contacto_email; emEl.href = 'mailto:' + cms.contacto_email; }
-    }
-    if (cms.habeas_data_texto) {
-        const hEl = document.getElementById('habeas_contenido');
-        if (hEl) hEl.innerHTML = cms.habeas_data_texto;
-    }
-    if (cms.terminos_texto) {
-        const tEl = document.getElementById('terminos_contenido');
-        if (tEl) tEl.innerHTML = cms.terminos_texto;
-    }
-
-    // Actualización dinámica del logo
-    if (cms.logo_url) {
-        const mainLogo = document.getElementById('mainLogo');
-        if (mainLogo) mainLogo.src = cms.logo_url;
-    }
-
-    // ==================== GESTIÓN DE ATRACCIONES (PRECIOS Y VISIBILIDAD) ====================
-    const serviceCards = document.querySelectorAll('.service-card-3d');
-    serviceCards.forEach(card => {
-        const serviceKey = card.dataset.serviceKey;
-        if (!serviceKey) return;
-
-        // Visibilidad
-        const isVisible = cms[`service_${serviceKey}_visible`];
-        if (isVisible === false) { // Si está explícitamente en false
-            card.classList.add('hidden');
-        } else {
-            card.classList.remove('hidden');
-        }
-
-        // Precios
-        const priceDisplayEl = card.querySelector('.service-price');
-        if (priceDisplayEl) {
-            let priceText = "";
-            if (serviceKey === "resbalador_colores") {
-                const precioAdulto = cms[`service_${serviceKey}_precio_adulto`];
-                const precioNino = cms[`service_${serviceKey}_precio_nino`];
-                if (precioAdulto && precioNino) {
-                    priceText = `Adultos: ${precioAdulto} / Niños: ${precioNino}`;
-                } else if (precioAdulto) {
-                    priceText = `Adultos: ${precioAdulto}`;
-                } else if (precioNino) {
-                    priceText = `Niños: ${precioNino}`;
-                }
-            } else if (serviceKey === "granja_interactiva") {
-                const precioAlimentar = cms[`service_${serviceKey}_precio_alimentar`];
-                if (precioAlimentar) {
-                    priceText = `Alimentar: ${precioAlimentar}`;
-                } else {
-                    priceText = "Entrada gratis";
-                }
-            } else if (cms[`service_${serviceKey}_precio`]) {
-                priceText = `Precio: ${cms[`service_${serviceKey}_precio`]}`;
-            } else if (serviceKey === "piscina_refrescante") {
-                priceText = cms[`service_${serviceKey}_precio`] || "Entrada gratis";
+    const loadCMSContent = async () => {
+        let cms = JSON.parse(localStorage.getItem('ecopark_cms') || '{}');
+        
+        if (supabaseClient) {
+            const { data, error } = await supabaseClient.from('cms_config').select('datos').eq('id', 'global_config').single();
+            if (!error && data) {
+                cms = data.datos;
+                localStorage.setItem('ecopark_cms', JSON.stringify(cms));
             }
-            priceDisplayEl.textContent = priceText;
+        }
+        
+        const applyIfExists = (id, val, isHTML = false) => {
+            const el = document.getElementById(id);
+            if (el && val !== undefined && val !== null) {
+                if (isHTML) el.innerHTML = val;
+                else el.textContent = val;
+            }
+        };
+
+        // 1. Hero Section
+        if (cms.hero_titulo) {
+            const heroTitle = document.querySelector('.hero-title');
+            if (heroTitle) heroTitle.innerHTML = cms.hero_titulo;
+        }
+        if (cms.hero_subtitulo) {
+            const heroDesc = document.querySelector('.hero-content p');
+            if (heroDesc) heroDesc.textContent = cms.hero_subtitulo;
+        }
+
+        // 2. Servicios / Experiencias
+        const updateCardDesc = (title, newDesc) => {
+            const card = document.querySelector(`.service-card-3d[data-title="${title}"]`);
+            if (card && newDesc) card.dataset.description = newDesc;
+        };
+
+        updateCardDesc("Resbalador de Colores", cms.srv_resbalador_desc);
+        updateCardDesc("Columpio 360", cms.srv_columpio_desc);
+        updateCardDesc("Piscina Refrescante", cms.srv_piscina_desc);
+        updateCardDesc("Granja Interactiva", cms.srv_granja_desc);
+        updateCardDesc("Restaurante Mundo de Colores", cms.srv_restaurante_desc);
+
+        // 3. Gestión de Atracciones (Precios y Visibilidad)
+        const serviceCards = document.querySelectorAll('.service-card-3d');
+        serviceCards.forEach(card => {
+            const serviceKey = card.dataset.serviceKey;
+            if (!serviceKey) return;
+
+            // Visibilidad
+            if (cms[`service_${serviceKey}_visible`] === false) {
+                card.classList.add('hidden');
+            } else {
+                card.classList.remove('hidden');
+            }
+
+            // Precios en las cards
+            const priceDisplayEl = card.querySelector('.service-price');
+            if (priceDisplayEl) {
+                let priceText = "";
+                if (serviceKey === "resbalador_colores") {
+                    const pA = cms[`service_${serviceKey}_precio_adulto`];
+                    const pN = cms[`service_${serviceKey}_precio_nino`];
+                    priceText = pA && pN ? `Ad: ${pA} / Ni: ${pN}` : (pA || pN || "");
+                } else if (serviceKey === "granja_interactiva") {
+                    priceText = cms[`service_${serviceKey}_precio_alimentar`] ? `Alimentar: ${cms[`service_${serviceKey}_precio_alimentar`]}` : "Entrada gratis";
+                } else {
+                    priceText = cms[`service_${serviceKey}_precio`] || "";
+                }
+                priceDisplayEl.textContent = priceText;
+            }
+        });
+
+        // 4. Contacto y Footer
+        const contactWa = cms.contacto_whatsapp || '573102200917';
+        document.querySelectorAll('a[href^="https://wa.me/573102200917"]').forEach(btn => {
+            const currentUrl = new URL(btn.href);
+            const text = currentUrl.searchParams.get('text') || '';
+            btn.href = `https://wa.me/${contactWa}?text=${encodeURIComponent(text)}`;
+        });
+
+        applyIfExists('footer_descripcion', cms.footer_descripcion);
+        applyIfExists('footer_rnt', cms.rnt_numero ? `RNT N.° ${cms.rnt_numero}` : null);
+        applyIfExists('footer_horario', cms.horarios);
+        applyIfExists('footer_direccion', cms.contacto_direccion);
+        
+        if (cms.contacto_telefono) {
+            const telEl = document.getElementById('footer_telefono');
+            if (telEl) { 
+                telEl.textContent = cms.contacto_telefono; 
+                telEl.href = 'tel:' + cms.contacto_telefono.replace(/\s/g,''); 
+            }
+        }
+        if (cms.contacto_email) {
+            const emEl = document.getElementById('footer_email');
+            if (emEl) { 
+                emEl.textContent = cms.contacto_email; 
+                emEl.href = 'mailto:' + cms.contacto_email; 
+            }
+        }
+
+        // 5. Legales
+        applyIfExists('habeas_contenido', cms.habeas_data_texto, true);
+        applyIfExists('terminos_contenido', cms.terminos_texto, true);
+
+        // 6. Logo
+        if (cms.logo_url) {
+            const mainLogo = document.getElementById('mainLogo');
+            if (mainLogo) mainLogo.src = cms.logo_url;
+        }
+
+        console.log('🔄 Contenido CMS sincronizado');
+    };
+
+    // Carga inicial
+    loadCMSContent();
+
+    // Escucha asincrónica de cambios en el storage
+    window.addEventListener('storage', (e) => {
+        if (e.key === 'ecopark_cms') {
+            loadCMSContent();
         }
     });
-    // ==================== MODALES LEGALES ====================
+
+    // Escucha en tiempo real de cambios en Supabase (CMS)
+    if (supabaseClient) {
+        supabaseClient
+            .channel('cms-realtime')
+            .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'cms_config', filter: 'id=eq.global_config' }, (payload) => {
+                localStorage.setItem('ecopark_cms', JSON.stringify(payload.new.datos));
+                loadCMSContent();
+            })
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'medios' }, () => {
+                console.log('📸 Nuevas fotos detectadas, actualizando galerías...');
+                // Aquí podrías disparar una función para refrescar fotos sin recargar
+            })
+            .subscribe();
+    }
     window.abrirModalLegal = (tipo) => {
         const id = tipo === 'habeas' ? 'modalHabeas' : 'modalTerminos';
         const modal = document.getElementById(id);
@@ -758,6 +755,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 ninos: ninos,
                 plan: planRadio.value,
                 servicio: planRadio.value,
+                descuento: "10% Aplicado",
                 notas: notas,
                 estado: 'pendiente',
                 asistido: false,
@@ -771,6 +769,18 @@ document.addEventListener('DOMContentLoaded', () => {
             const citas = JSON.parse(localStorage.getItem('ecopark_citas') || '[]');
             citas.push(nuevaReserva);
             localStorage.setItem('ecopark_citas', JSON.stringify(citas));
+
+            // ===== GUARDAR EN SUPABASE =====
+            if (supabaseClient) {
+                supabaseClient.from('reservas').insert([
+                    { id: nuevaReserva.id, cliente: nombre, telefono: '+57' + whatsapp, correo: correo, fecha: fecha, adultos: adultos, ninos: ninos, plan: planRadio.value, descuento_aplicado: '10% (Promo Web)', notas: notas, fuente: 'landing' }
+                ]).then(({ error }) => {
+                    if (!error) console.log('✅ Reserva sincronizada en la nube');
+                });
+            }
+
+            // ===== ENVÍO DE EMAIL OMITIDO POR AHORA =====
+            // console.log('📧 Servicio de email pendiente de configuración.');
 
             // Log de actividad
             logActivity(`¡Nueva reserva de ${nombre} para ${planRadio.value}!`);

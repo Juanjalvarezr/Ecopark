@@ -202,6 +202,29 @@ const BackupManager = {
     deleteBackup: (backupKey) => {
         localStorage.removeItem(backupKey);
         showNotification('Backup eliminado', 'success');
+    },
+
+    exportToFile: () => {
+        const data = {};
+        const keys = ['ecopark_citas', 'ecopark_medios', 'ecopark_banners', 'ecopark_reviews', 'ecopark_google_config', 'ecopark_maps_config', 'ecopark_webhook', 'ecopark_cms'];
+        keys.forEach(k => data[k] = localStorage.getItem(k));
+        const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `ecopark_data_${new Date().toISOString().split('T')[0]}.json`;
+        a.click();
+    },
+
+    importFromFile: (file) => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const data = JSON.parse(e.target.result);
+            Object.keys(data).forEach(k => { if (data[k]) localStorage.setItem(k, data[k]); });
+            showNotification('¡Datos sincronizados! Recargando...', 'success');
+            setTimeout(() => location.reload(), 1500);
+        };
+        reader.readAsText(file);
     }
 };
 
@@ -266,6 +289,34 @@ document.addEventListener('DOMContentLoaded', () => {
     const sections = document.querySelectorAll('.content-section');
     const pageTitle = document.getElementById('pageTitle');
 
+    // ==================== SUPABASE INIT ====================
+    // Cuando estés listo, reemplaza con tus credenciales de supabase.com
+    const SUPABASE_URL = 'https://gisljislsdgrfwgzshtxt.supabase.co'; // Tu URL de proyecto Supabase
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdpc2xqaXNsZGdyZndnemNodHh0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkyMjMwNDAsImV4cCI6MjA5NDc5OTA0MH0.1_a6G7gtbqpYzXaNmrhakkSWaD0kGqJBHSxsWPlQ1OA'; // Tu Anon Public Key
+    const supabaseClient = typeof supabase !== 'undefined' ? supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
+
+    // ESCUCHA REALTIME: Sincronización total automática
+    if (supabaseClient) {
+        const adminChannel = supabaseClient
+            .channel('admin-sync')
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'reservas' }, (payload) => {
+                console.log('🔔 Cambio en Reservas:', payload.eventType);
+                loadCitas().then(() => { window.renderCitasTableFull(); updateDashboard(); });
+            })
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'medios' }, () => loadMedios())
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'banners' }, () => loadBanners())
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'reviews' }, () => loadReviews())
+            .subscribe((status) => {
+                if (status === 'SUBSCRIBED') {
+                    console.log('✅ Conectado a Supabase Realtime');
+                }
+                if (status === 'CHANNEL_ERROR') {
+                    console.error('❌ Error de conexión Realtime. Reintentando...');
+                    setTimeout(() => adminChannel.subscribe(), 5000);
+                }
+            });
+    }
+
     const navigateToSection = (sectionId) => {
         const targetLink = Array.from(navLinks).find(l => l.dataset.section === sectionId);
         if (targetLink) {
@@ -288,23 +339,33 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    loginForm?.addEventListener('submit', (e) => {
+    loginForm?.addEventListener('submit', async (e) => {
         e.preventDefault();
-        const user = document.getElementById('adminUser')?.value.trim().toLowerCase();
+        e.stopPropagation();
+        const user = document.getElementById('adminUser')?.value.trim();
         const pass = document.getElementById('adminPass')?.value;
 
-        console.log("Intentando login con:", user);
+        console.log("🔐 Intentando login con:", user);
 
-        if (user === AUTH_CONFIG.user.toLowerCase() && pass === AUTH_CONFIG.pass) {
-            sessionStorage.setItem('ecopark_authenticated', 'true');
-            if (loginScreen) loginScreen.style.display = 'none';
-            console.log("Login exitoso, navegando a dashboard...");
-            navigateToSection('dashboard');
-            showNotification('¡Bienvenido al sistema!', 'success');
-        } else {
-            console.error("Credenciales incorrectas");
-            if (loginError) loginError.classList.remove('hidden');
-            setTimeout(() => loginError?.classList.add('hidden'), 3000);
+        // Intentar autenticación real con Supabase
+        if (supabaseClient) {
+            const { data, error } = await supabaseClient.auth.signInWithPassword({
+                email: user,
+                password: pass
+            });
+
+            if (!error) {
+                console.log("✅ Login Supabase exitoso");
+                sessionStorage.setItem('ecopark_authenticated', 'true');
+                if (loginScreen) loginScreen.style.display = 'none';
+                navigateToSection('dashboard');
+                showNotification('¡Bienvenido al sistema!', 'success');
+                return;
+            } else {
+                console.error("❌ Error Supabase Auth:", error.message);
+                if (loginError) loginError.classList.remove('hidden');
+                setTimeout(() => loginError?.classList.add('hidden'), 3000);
+            }
         }
     });
 
@@ -335,13 +396,24 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // ==================== LOCAL STORAGE ====================
-    const loadCitas = () => {
+    const loadCitas = async () => {
+        if (supabaseClient) {
+            const { data, error } = await supabaseClient.from('reservas').select('*').order('fecha', { ascending: true });
+            if (!error) {
+                citas = data;
+                return citas;
+            }
+        }
         const stored = localStorage.getItem('ecopark_citas');
         citas = stored ? JSON.parse(stored) : [];
         return citas;
     };
 
-    const saveCitas = () => {
+    const saveCitas = async (citaData) => {
+        if (supabaseClient && citaData) {
+            const { error } = await supabaseClient.from('reservas').upsert(citaData);
+            if (error) console.error('Error Supabase save:', error);
+        }
         localStorage.setItem('ecopark_citas', JSON.stringify(citas));
     };
 
@@ -362,33 +434,57 @@ document.addEventListener('DOMContentLoaded', () => {
         localStorage.setItem('ecopark_google_config', JSON.stringify(googleConfig));
     };
 
-    const loadMedios = () => {
+    const loadMedios = async () => {
+        if (supabaseClient) {
+            const { data } = await supabaseClient.from('medios').select('*').order('timestamp', { ascending: false });
+            if (data) { medios = data; renderMedios(); return medios; }
+        }
         const stored = localStorage.getItem('ecopark_medios');
         medios = stored ? JSON.parse(stored) : [];
         return medios;
     };
 
-    const saveMedios = () => {
+    const saveMedios = async (nuevoMedio) => {
+        if (supabaseClient && nuevoMedio) {
+            const { error } = await supabaseClient.from('medios').upsert(nuevoMedio);
+            if (error) console.error('Error Supabase save media:', error);
+        }
         localStorage.setItem('ecopark_medios', JSON.stringify(medios));
     };
 
-    const loadBanners = () => {
+    const loadBanners = async () => {
+        if (supabaseClient) {
+            const { data } = await supabaseClient.from('banners').select('*').order('timestamp', { ascending: false });
+            if (data) { banners = data; renderBanners(); return banners; }
+        }
         const stored = localStorage.getItem('ecopark_banners');
         banners = stored ? JSON.parse(stored) : [];
         return banners;
     };
 
-    const saveBanners = () => {
+    const saveBanners = async (nuevoBanner) => {
+        if (supabaseClient && nuevoBanner) {
+            const { error } = await supabaseClient.from('banners').upsert(nuevoBanner);
+            if (error) console.error('Error Supabase save banner:', error);
+        }
         localStorage.setItem('ecopark_banners', JSON.stringify(banners));
     };
 
-    const loadReviews = () => {
+    const loadReviews = async () => {
+        if (supabaseClient) {
+            const { data } = await supabaseClient.from('reviews').select('*').order('timestamp', { ascending: false });
+            if (data) { reviews = data; renderReviews(); return reviews; }
+        }
         const stored = localStorage.getItem('ecopark_reviews');
         reviews = stored ? JSON.parse(stored) : [];
         return reviews;
     };
 
-    const saveReviews = () => {
+    const saveReviews = async () => {
+        if (supabaseClient && reviews.length > 0) {
+            const { error } = await supabaseClient.from('reviews').upsert(reviews);
+            if (error) console.error('Error Supabase save reviews:', error);
+        }
         localStorage.setItem('ecopark_reviews', JSON.stringify(reviews));
     };
 
@@ -669,9 +765,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
             saveCitas();
             
-            // Sync with Google Calendar if enabled
-            if (citaData.syncGoogle && googleConfig.apiKey) {
-                await syncToGoogleCalendar(citaData);
+            // Google Calendar omitido por ahora (Pendiente)
+            if (citaData.syncGoogle) {
+                console.log('📅 Sincronización con Google Calendar pendiente de configuración de API.');
             }
 
             citaModal.classList.remove('active');
@@ -906,6 +1002,10 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             
             if (confirm(`¿Estás SEGURO de eliminar la cita de ${cita.cliente}?\n\nEsta acción NO se puede deshacer.`)) {
+                if (supabaseClient) {
+                    const { error } = await supabaseClient.from('reservas').delete().eq('id', id);
+                    if (error) throw error;
+                }
                 citas = citas.filter(c => c.id !== id);
                 saveCitas();
                 renderCitasTable();
@@ -1068,28 +1168,29 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    medioForm?.addEventListener('submit', (e) => {
+    medioForm?.addEventListener('submit', async (e) => {
         e.preventDefault();
-        
         try {
-            const url = document.getElementById('medioUrl')?.value?.trim();
+            LoadingManager.show('Subiendo medio...');
+            let url = document.getElementById('medioUrl')?.value?.trim();
+            const file = document.getElementById('medioFile')?.files[0];
             const titulo = sanitizeInput(document.getElementById('medioTitulo')?.value);
             
-            if (!url) {
-                showToast('URL del medio es requerida', 'error');
-                return;
-            }
-            
-            if (!titulo) {
-                showToast('Título del medio es requerido', 'error');
-                return;
+            if (!url && !file) throw new Error('Sube un archivo o pega una URL');
+
+            if (file && supabaseClient) {
+                const fileName = `${Date.now()}_${file.name}`;
+                const { error: uploadError } = await supabaseClient.storage.from('medios-ecopark').upload(fileName, file);
+                if (uploadError) throw uploadError;
+                const { data } = supabaseClient.storage.from('medios-ecopark').getPublicUrl(fileName);
+                url = data.publicUrl;
             }
             
             const medioData = {
                 id: Date.now().toString(),
                 tipo: document.getElementById('medioTipo')?.value || 'foto',
                 url: url,
-                titulo: titulo,
+                titulo: titulo || 'Sin título',
                 categoria: document.getElementById('medioCategoria')?.value || 'general',
                 descripcion: sanitizeInput(document.getElementById('medioDescripcion')?.value || ''),
                 destacado: document.getElementById('medioDestacado')?.checked || false,
@@ -1097,11 +1198,13 @@ document.addEventListener('DOMContentLoaded', () => {
             };
 
             medios.push(medioData);
-            saveMedios();
+            await saveMedios(medioData);
             medioModal.classList.remove('active');
+            LoadingManager.hide();
             renderMedios();
             showToast('Medio agregado ✓', 'success');
         } catch (error) {
+            LoadingManager.hide();
             console.error('Error al agregar medio:', error);
             showToast('Error: ' + error.message, 'error');
         }
@@ -1121,8 +1224,12 @@ document.addEventListener('DOMContentLoaded', () => {
         medioModal.classList.add('active');
     };
 
-    window.deleteMedio = (id) => {
-        if (confirm('¿Estás seguro de eliminar este medio?')) {
+    window.deleteMedio = async (id) => {
+        if (confirm('¿Estás seguro de eliminar este medio permanentemente?')) {
+            if (supabaseClient) {
+                const { error } = await supabaseClient.from('medios').delete().eq('id', id);
+                if (error) { showToast('Error al borrar de la nube', 'error'); return; }
+            }
             medios = medios.filter(m => m.id !== id);
             saveMedios();
             renderMedios();
@@ -1354,8 +1461,12 @@ document.addEventListener('DOMContentLoaded', () => {
         bannerModal.classList.add('active');
     };
 
-    window.deleteBanner = (id) => {
-        if (confirm('¿Estás seguro de eliminar este banner?')) {
+    window.deleteBanner = async (id) => {
+        if (confirm('¿Estás seguro de eliminar este banner permanentemente?')) {
+            if (supabaseClient) {
+                const { error } = await supabaseClient.from('banners').delete().eq('id', id);
+                if (error) { showToast('Error al borrar de la nube', 'error'); return; }
+            }
             banners = banners.filter(b => b.id !== id);
             saveBanners();
             renderBanners();
@@ -1494,7 +1605,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // ============ MARCAR ASISTIDO ============
-    window.marcarAsistido = (id) => {
+    window.marcarAsistido = async (id) => {
         const citas = JSON.parse(localStorage.getItem('ecopark_citas') || '[]');
         const cita = citas.find(c => c.id === id);
         if (!cita) return;
@@ -1515,7 +1626,7 @@ document.addEventListener('DOMContentLoaded', () => {
             showAdminToast('Asistencia desmarcada', 'success');
         }
 
-        localStorage.setItem('ecopark_citas', JSON.stringify(citas));
+        await saveCitas(cita);
         // Re-render table
         setTimeout(() => {
             const event = new CustomEvent('refresh-citas');
@@ -1894,8 +2005,12 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('citaModal').classList.add('active');
     };
 
-    window.deleteCitaFull = (id) => {
-        if (!confirm('¿Eliminar esta reserva permanentemente?')) return;
+    window.deleteCitaFull = async (id) => {
+        if (!confirm('¿Eliminar esta reserva permanentemente de la nube y del sistema?')) return;
+        if (supabaseClient) {
+            const { error } = await supabaseClient.from('reservas').delete().eq('id', id);
+            if (error) { showAdminToast('Error al borrar: ' + error.message, 'error'); return; }
+        }
         const citas = JSON.parse(localStorage.getItem('ecopark_citas') || '[]').filter(c => c.id !== id);
         localStorage.setItem('ecopark_citas', JSON.stringify(citas));
         window.renderCitasTableFull();
@@ -1995,6 +2110,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 <button onclick="BackupManager.createBackup();showNotification('Backup creado ✓','success');window.showAdminTools();" style="width:100%;padding:10px;background:#10b981;color:white;border:none;border-radius:6px;cursor:pointer;margin-bottom:12px;font-weight:600;">
                     Crear Backup Ahora
                 </button>
+                <button onclick="BackupManager.exportToFile()" style="width:100%;padding:10px;background:#6366f1;color:white;border:none;border-radius:6px;cursor:pointer;margin-bottom:12px;font-weight:600;">
+                    📤 Exportar para otro dispositivo (.json)
+                </button>
+                <label style="display:block;width:100%;padding:10px;background:#f59e0b;color:white;border:none;border-radius:6px;cursor:pointer;margin-bottom:12px;font-weight:600;text-align:center;">
+                    📥 Importar desde archivo
+                    <input type="file" accept=".json" onchange="BackupManager.importFromFile(this.files[0])" style="display:none;">
+                </label>
                 <div style="max-height:200px;overflow-y:auto;">
                     ${backupsList || '<p style="color:#6b7280;font-size:12px;">No hay backups guardados</p>'}
                 </div>

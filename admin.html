@@ -8,6 +8,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
     <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link rel="stylesheet" href="admin.css">
 </head>
 <body class="bg-gray-100">
@@ -534,9 +535,13 @@
                 </div>
 
                 <div>
-                    <label class="form-label">URL del Medio *</label>
-                    <input type="url" id="medioUrl" class="form-input" placeholder="https://..." required>
-                    <p class="form-hint">Pega la URL de tu imagen o video (YouTube, Vimeo, URL directa)</p>
+                    <label class="form-label">Archivo de Imagen o URL de Video *</label>
+                    <div id="fileUploadContainer" class="space-y-2">
+                        <input type="file" id="medioFile" class="form-input" accept="image/*">
+                        <div class="text-center text-xs text-gray-400">-- O --</div>
+                        <input type="url" id="medioUrl" class="form-input" placeholder="URL de YouTube/Vimeo para videos">
+                    </div>
+                    <p class="form-hint">Sube una foto directamente o pega un link de video.</p>
                 </div>
 
                 <div>
