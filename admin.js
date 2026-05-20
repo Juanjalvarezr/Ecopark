@@ -521,12 +521,8 @@ document.addEventListener('DOMContentLoaded', () => {
         localStorage.setItem('ecopark_maps_config', JSON.stringify(mapsConfig));
     };
 
-    // ==================== NAVIGATION ====================
-    const navLinks = document.querySelectorAll('.nav-link');
-    const sections = document.querySelectorAll('.content-section');
-    const pageTitle = document.getElementById('pageTitle');
-    const dashboardSection = document.getElementById('dashboard');
-
+    // Lógica de navegación (usando las variables declaradas al inicio)
+    
     navLinks.forEach(link => {
         link.addEventListener('click', (e) => {
             e.preventDefault();
