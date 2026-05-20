@@ -289,9 +289,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const loginScreen = document.getElementById('loginScreen');
     const loginForm = document.getElementById('loginForm');
     const loginError = document.getElementById('loginError');
-    const navLinks = document.querySelectorAll('.nav-link');
-    const sections = document.querySelectorAll('.content-section');
-    const pageTitle = document.getElementById('pageTitle');
+    const navLinks = document.querySelectorAll('.nav-link'); // Única declaración permitida
+    const sections = document.querySelectorAll('.content-section'); // Única declaración permitida
+    const pageTitle = document.getElementById('pageTitle'); // Única declaración permitida
 
     // ==================== SUPABASE INIT ====================
     // Cuando estés listo, reemplaza con tus credenciales de supabase.com
