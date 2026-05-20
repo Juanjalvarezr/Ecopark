@@ -1245,7 +1245,14 @@ window.showToast = showToast;
     window.deleteMedio = async (id) => {
         if (confirm('¿Estás seguro de eliminar este medio permanentemente?')) {
             if (supabaseClient) {
-                const { error } = await supabaseClient.from('medios').delete().eq('id', id);
+                const medio = medios.find(m => m.id === id);
+                if (medio && medio.url.includes('medios-ecopark')) {
+                    // Extraer el nombre del archivo de la URL de Supabase
+                    const fileName = medio.url.split('/').pop();
+                    await supabaseClient.storage.from('medios-ecopark').remove([fileName]);
+                }
+                
+                const { error } = await supabaseClient.from('medios').delete().match({ id: id });
                 if (error) { showToast('Error al borrar de la nube', 'error'); return; }
             }
             medios = medios.filter(m => m.id !== id);

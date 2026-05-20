@@ -619,8 +619,76 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log('🔄 Contenido CMS sincronizado');
     };
 
+    // Carga de Banners dinámicos
+    const loadBanners = async () => {
+        if (!supabaseClient) return;
+        const { data: activeBanners } = await supabaseClient.from('banners').select('*').eq('activo', true).order('timestamp', { ascending: false });
+        
+        if (activeBanners && activeBanners.length > 0) {
+            const mainBanner = activeBanners.find(b => b.posicion === 'hero');
+            if (mainBanner) {
+                const hero = document.querySelector('.hero');
+                if (hero) hero.style.backgroundImage = `linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('${mainBanner.imagen}')`;
+                const title = document.querySelector('.hero-title');
+                if (title && mainBanner.titulo) title.textContent = mainBanner.titulo;
+            }
+        }
+    };
+
+    // Carga de Reseñas dinámicas
+    const loadReviews = async () => {
+        if (!supabaseClient) return;
+        const container = document.getElementById('reviewsContainer');
+        if (!container) return;
+
+        const { data: dbReviews } = await supabaseClient.from('reviews').select('*').order('timestamp', { ascending: false }).limit(3);
+        
+        if (dbReviews && dbReviews.length > 0) {
+            container.innerHTML = dbReviews.map(r => `
+                <div class="glass-card p-8 reveal is-visible" style="background: rgba(255,255,255,0.1)">
+                    <div class="flex mb-4 text-yellow-400">
+                        ${'★'.repeat(r.rating)}${'☆'.repeat(5 - r.rating)}
+                    </div>
+                    <p class="text-lg italic mb-6">"${r.text}"</p>
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center font-bold text-white">${r.authorName[0]}</div>
+                        <div>
+                            <p class="font-bold">${r.authorName}</p>
+                            <p class="text-sm text-green-300">Cliente verificado</p>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+    };
+
+    // Carga de Amigos de la Granja (Fotos de categoría 'granja')
+    const loadAnimals = async () => {
+        if (!supabaseClient) return;
+        const container = document.getElementById('animalsContainer');
+        if (!container) return;
+
+        const { data: dbMedios } = await supabaseClient.from('medios').select('*').eq('categoria', 'granja').limit(5);
+        
+        if (dbMedios && dbMedios.length > 0) {
+            container.innerHTML = dbMedios.map(m => `
+                <div class="reveal is-visible group">
+                    <div class="w-32 h-32 mx-auto mb-4 rounded-full overflow-hidden border-4 border-green-100 shadow-lg transform group-hover:scale-110 transition-transform cursor-pointer">
+                        <img src="${m.url}" class="w-full h-full object-cover" alt="${m.titulo}">
+                    </div>
+                    <h3 class="text-xl font-bold text-green-800">${m.titulo}</h3>
+                    <p class="text-sm text-gray-400">${m.descripcion || 'Amigo de Ecopark'}</p>
+                </div>
+            `).join('');
+        }
+    };
+
     // Carga inicial
     loadCMSContent();
+    loadBanners();
+    loadReviews();
+    loadAnimals();
+    loadReviews();
 
     // Escucha asincrónica de cambios en el storage
     window.addEventListener('storage', (e) => {
